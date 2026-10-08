@@ -500,6 +500,11 @@
 		border-bottom-color: rgba(23, 33, 58, 0.06);
 	}
 
+	/* 滚轮区：uni 自带白底，不跟着翻黑就会在暗色主题下露出一块白（.uni-picker-content） */
+	uni-app .uni-picker-container .uni-picker-content {
+		background-color: #FFFFFF;
+	}
+
 	uni-app .uni-picker-container .uni-picker-view-content .uni-picker-item {
 		color: #333333;
 	}
@@ -513,6 +518,10 @@
 	@media screen and (min-width: 500px) and (min-height: 500px) {
 		uni-app .uni-picker-container .uni-picker-toggle.uni-picker-custom {
 			border-radius: 32rpx;
+		}
+
+		uni-app .uni-picker-container .uni-picker-content {
+			border-radius: 0 0 32rpx 32rpx;
 		}
 	}
 
@@ -573,7 +582,8 @@
 
 	/* ---- 深色（思考实验/黑金）主题下的系统弹层 ----
 	   html.theme-thought 由 utils/app-mode.js 的 syncRootTheme 挂在根节点，是弹层的真祖先 */
-	html.theme-thought uni-app .uni-picker-container .uni-picker-toggle.uni-picker-custom {
+	html.theme-thought uni-app .uni-picker-container .uni-picker-toggle.uni-picker-custom,
+	html.theme-thought uni-app .uni-picker-container .uni-picker-content {
 		background-color: #141419;
 	}
 
