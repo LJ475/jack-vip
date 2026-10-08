@@ -43,7 +43,7 @@
 			<view class="progress-top">
 				<view class="ring" :class="{ 'ring--pop': ringPop }" :style="{ background: ringBg }">
 					<view class="ring-hole">
-						<text class="ring-pct">{{ displayPercent }}%</text>
+						<text class="ring-pct">{{ pctText }}%</text>
 						<text class="ring-label">完成度</text>
 					</view>
 				</view>
@@ -434,7 +434,7 @@ const percent = computed(() => {
 })
 
 const ringBg = computed(() => {
-	const p = displayPercent.value
+	const p = displayPercent.value.toFixed(2)
 	const color = goal.value ? goal.value.color : 'var(--brand)'
 	return `conic-gradient(${color} 0% ${p}%, rgba(137, 148, 169, 0.22) ${p}% 100%)`
 })
@@ -442,13 +442,15 @@ const ringBg = computed(() => {
 /* ==================== 进度动效 ==================== */
 
 /**
- * 圆环是 conic-gradient，CSS 过渡不了，所以用 rAF 把百分比补间出来；
- * 先把值落到位再动画，极端环境（rAF 不跑）也不会卡在 0%。
+ * 圆环是 conic-gradient，CSS 过渡不了，所以用 rAF 把百分比补间出来。
+ * 补间值保持小数：取整的话每帧只能跳 1%（=3.6°），缓动尾段就变成肉眼可见的一格一格。
  */
 const displayPercent = ref(0)
+const pctText = computed(() => Math.round(displayPercent.value))
 const ringPop = ref(false)
 let tweenRaf = null
 let popTimer = null
+let landTimer = null
 
 function hexParts(hex) {
 	const s = (hex || '').replace('#', '')
@@ -471,29 +473,41 @@ function rgbaOf(hex, a) {
 	return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`
 }
 
+/* 样式绑成对象而不是字符串：字符串走 cssText 整条重写，
+   补间期间每帧都会重铺一次渐变和光晕，进度条就是在这里开始卡的 */
 const barStyle = computed(() => {
 	const c = goal.value ? goal.value.color : 'var(--brand)'
-	return `width: ${displayPercent.value}%; background-image: linear-gradient(90deg, ${c} 0%, ${lighten(c, 0.4)} 100%); box-shadow: 0 0 14rpx ${rgbaOf(c, 0.3)};`
+	return {
+		width: displayPercent.value.toFixed(2) + '%',
+		'background-image': `linear-gradient(90deg, ${c} 0%, ${lighten(c, 0.4)} 100%)`,
+		'box-shadow': `0 0 14rpx ${rgbaOf(c, 0.3)}`
+	}
 })
 
 function tweenPercent(to) {
 	const from = displayPercent.value
 	if (from === to) return
-	displayPercent.value = to
 	if (to > from) {
 		ringPop.value = true
 		clearTimeout(popTimer)
 		popTimer = setTimeout(() => { ringPop.value = false }, 640)
+	}
+	if (typeof requestAnimationFrame !== 'function') {
+		displayPercent.value = to
+		return
 	}
 	cancelAnimationFrame(tweenRaf)
 	const start = Date.now()
 	const dur = 900
 	const step = () => {
 		const k = Math.min(1, (Date.now() - start) / dur)
-		displayPercent.value = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)))
+		displayPercent.value = from + (to - from) * (1 - Math.pow(1 - k, 3))
 		if (k < 1) tweenRaf = requestAnimationFrame(step)
 	}
 	tweenRaf = requestAnimationFrame(step)
+	// 页面被挂起时 rAF 一帧都不跑，兜底把值落到位，别让圆环停在 0%
+	clearTimeout(landTimer)
+	landTimer = setTimeout(() => { displayPercent.value = to }, dur + 120)
 }
 
 watch(percent, (v) => tweenPercent(v))
@@ -501,6 +515,7 @@ watch(percent, (v) => tweenPercent(v))
 onUnmounted(() => {
 	cancelAnimationFrame(tweenRaf)
 	clearTimeout(popTimer)
+	clearTimeout(landTimer)
 })
 
 const cheerText = computed(() => {
