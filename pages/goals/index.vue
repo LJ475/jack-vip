@@ -21,10 +21,13 @@
 					</view>
 				</view>
 			</view>
-			<view class="overview-range" @click="datePickVisible = true">
-				<text class="overview-range-text">{{ startMonthText }} → {{ endText }}</text>
-				<uni-icons type="compose" size="14" color="var(--text-aux)" />
-			</view>
+			<!-- 目标日期：用 uni 官方 picker（H5/App 均由系统组件呈现，样式在 App.vue 统一覆盖） -->
+			<picker mode="date" :value="endDate" :start="rangeMinDate" @change="onEndDateChange">
+				<view class="overview-range">
+					<text class="overview-range-text">{{ startMonthText }} → {{ endText }}</text>
+					<uni-icons type="compose" size="14" color="var(--text-aux)" />
+				</view>
+			</picker>
 			<text class="overview-quote">每一个小目标，都是未来的你在靠近</text>
 		</view>
 
@@ -91,15 +94,6 @@
 			:visible="createVisible"
 			@close="createVisible = false"
 			@confirm="onGoalCreate"
-		/>
-
-		<!-- 目标日期选择弹层（自定义滚轮，不用系统 picker） -->
-		<date-picker-sheet
-			:visible="datePickVisible"
-			:value="endDate"
-			title="选择目标日期"
-			@close="datePickVisible = false"
-			@change="onEndDateChange"
 		/>
 
 		<!-- 底部导航（2030 为中间主入口） -->
@@ -202,7 +196,9 @@ const goals = ref([])
 const startMonthText = ref('2026.08')
 const endDate = ref('2030-12-31')
 const createVisible = ref(false)
-const datePickVisible = ref(false)
+
+/** 官方 picker 的可选下限：起始月份 1 号（选到起始日之前倒计时会变成 0） */
+const rangeMinDate = computed(() => `${(startMonthText.value || '2026.08').replace('.', '-')}-01`)
 
 function loadGoals() {
 	let saved = null
@@ -316,9 +312,15 @@ onUnmounted(() => {
 	cancelAnimationFrame(daysRaf.value)
 })
 
-/** 自定义目标日期（date-picker-sheet 回传 YYYY-MM-DD）：全页倒计时/圆环/范围行随之更新 */
-function onEndDateChange(v) {
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(v || '')) return
+/** 官方 date picker 回传 YYYY-MM-DD：全页倒计时/圆环/范围行随之更新 */
+function onEndDateChange(e) {
+	const v = (e && e.detail && e.detail.value) || ''
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return
+	/* H5 端 picker 不强制 start（实测 1876 年仍可选），早于起始月份就挡掉 */
+	if (v < rangeMinDate.value) {
+		uni.showToast({ title: `目标日期不能早于 ${startMonthText.value}`, icon: 'none' })
+		return
+	}
 	endDate.value = v
 	persist()
 	uni.showToast({ title: `目标日期已设为 ${v.slice(0, 7).replace('-', '.')}，倒计时已更新`, icon: 'none' })
