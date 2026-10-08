@@ -476,48 +476,43 @@
 	 * （该类由 utils/app-mode.js 的 syncRootTheme 挂到根节点，覆盖两种挂载位置）。
 	 * ============================================================ */
 
-	/* ---- picker 日期/选择弹窗 ---- */
-	uni-picker .uni-picker-container .uni-picker-custom {
+	/* ---- picker 日期/选择弹窗 ----
+	   实测：uni-h5 把弹层挂在 <uni-app> 下（.uni-picker-container → UNI-APP → BODY），
+	   页面里那个 <uni-picker> 标签并不包含它，所以旧写法 `uni-picker .uni-picker-container …`
+	   永远不匹配；这里改用 .uni-app 前缀，并保证比 uni 自带规则多一级，才盖得住。 */
+	uni-app .uni-picker-container .uni-picker-toggle.uni-picker-custom {
 		border-radius: 32rpx 32rpx 0 0;
 		padding-bottom: env(safe-area-inset-bottom);
 	}
 
-	uni-picker .uni-picker-container .uni-picker-header:after {
-		border-bottom-color: rgba(23, 33, 58, 0.06);
-	}
-
-	uni-picker .uni-picker-container .uni-picker-action.uni-picker-action-cancel {
+	uni-app .uni-picker-container .uni-picker-header .uni-picker-action.uni-picker-action-cancel {
 		color: #8994A9;
-		font-size: 16px;
+		font-size: 17px;
 	}
 
-	uni-picker .uni-picker-container .uni-picker-action.uni-picker-action-confirm {
+	uni-app .uni-picker-container .uni-picker-header .uni-picker-action.uni-picker-action-confirm {
 		color: #3A83F7;
-		font-size: 16px;
+		font-size: 17px;
 		font-weight: 600;
 	}
 
-	uni-picker .uni-picker-container .uni-picker-item {
+	uni-app .uni-picker-container .uni-picker-header:after {
+		border-bottom-color: rgba(23, 33, 58, 0.06);
+	}
+
+	uni-app .uni-picker-container .uni-picker-view-content .uni-picker-item {
 		color: #333333;
 	}
 
-	uni-picker .uni-picker-container .uni-picker-view-indicator:before,
-	uni-picker .uni-picker-container .uni-picker-view-indicator:after {
+	uni-app .uni-picker-container .uni-picker-view-indicator:before,
+	uni-app .uni-picker-container .uni-picker-view-indicator:after {
 		border-color: rgba(23, 33, 58, 0.08);
 	}
 
 	/* 宽屏（≥500px 视口）picker 变居中对话框：四角都圆 */
 	@media screen and (min-width: 500px) and (min-height: 500px) {
-		uni-picker .uni-picker-container .uni-picker-custom {
+		uni-app .uni-picker-container .uni-picker-toggle.uni-picker-custom {
 			border-radius: 32rpx;
-		}
-
-		uni-picker .uni-picker-container .uni-picker-header {
-			border-radius: 32rpx 32rpx 0 0;
-		}
-
-		uni-picker .uni-picker-container .uni-picker-content {
-			border-radius: 0 0 32rpx 32rpx;
 		}
 	}
 
@@ -528,17 +523,17 @@
 		background-color: #FFFFFF;
 	}
 
-	uni-actionsheet .uni-actionsheet__cell {
+	uni-actionsheet .uni-actionsheet .uni-actionsheet__cell {
 		padding: 14px 6px;
 		font-size: 17px;
 		color: #333333;
 	}
 
-	uni-actionsheet .uni-actionsheet__cell:active {
+	uni-actionsheet .uni-actionsheet .uni-actionsheet__cell:active {
 		background-color: #F0F4FA;
 	}
 
-	uni-actionsheet .uni-actionsheet__cell:before {
+	uni-actionsheet .uni-actionsheet .uni-actionsheet__cell:before {
 		border-top-color: rgba(23, 33, 58, 0.06);
 	}
 
@@ -548,60 +543,62 @@
 		background-color: #FFFFFF;
 	}
 
-	uni-modal .uni-modal__title {
+	uni-modal .uni-modal .uni-modal__title {
 		font-weight: 600;
 		color: #333333;
 	}
 
-	uni-modal .uni-modal__bd {
+	uni-modal .uni-modal .uni-modal__bd {
 		color: #5C6C8D;
 	}
 
-	uni-modal .uni-modal__ft:after,
-	uni-modal .uni-modal__btn:after {
+	uni-modal .uni-modal .uni-modal__ft:after,
+	uni-modal .uni-modal .uni-modal__btn:after {
 		border-color: rgba(23, 33, 58, 0.06);
 	}
 
-	uni-modal .uni-modal__btn:active {
+	uni-modal .uni-modal .uni-modal__btn:active {
 		background-color: #F0F4FA;
 	}
 
-	uni-modal .uni-modal__btn_default {
-		color: #8994A9;
+	/* 取消键 uni 会写内联色（黑金面板上会变成看不见），这里用 !important 兜住；
+	   主按钮不覆盖，保留调用方传的 confirmColor（删除=红） */
+	uni-modal .uni-modal .uni-modal__btn.uni-modal__btn_default {
+		color: #8994A9 !important;
 	}
 
-	uni-modal .uni-modal__btn_primary {
+	uni-modal .uni-modal .uni-modal__btn.uni-modal__btn_primary {
 		color: #3A83F7;
 	}
 
-	/* ---- 深色（思考实验/黑金）主题下的系统弹层 ---- */
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-custom,
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-content {
+	/* ---- 深色（思考实验/黑金）主题下的系统弹层 ----
+	   html.theme-thought 由 utils/app-mode.js 的 syncRootTheme 挂在根节点，是弹层的真祖先 */
+	html.theme-thought uni-app .uni-picker-container .uni-picker-toggle.uni-picker-custom {
 		background-color: #141419;
 	}
 
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-item {
+	html.theme-thought uni-app .uni-picker-container .uni-picker-view-content .uni-picker-item {
 		color: #E8E8EA;
 	}
 
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-header:after {
-		border-bottom-color: #2A2A32;
-	}
-
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-action.uni-picker-action-cancel {
+	html.theme-thought uni-app .uni-picker-container .uni-picker-header .uni-picker-action.uni-picker-action-cancel {
 		color: #85858D;
 	}
 
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-action.uni-picker-action-confirm {
+	html.theme-thought uni-app .uni-picker-container .uni-picker-header .uni-picker-action.uni-picker-action-confirm {
 		color: #E8B341;
 	}
 
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-view-indicator:before,
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-view-indicator:after {
+	html.theme-thought uni-app .uni-picker-container .uni-picker-header:after {
+		border-bottom-color: #2A2A32;
+	}
+
+	html.theme-thought uni-app .uni-picker-container .uni-picker-view-indicator:before,
+	html.theme-thought uni-app .uni-picker-container .uni-picker-view-indicator:after {
 		border-color: #2A2A32;
 	}
 
-	html.theme-thought uni-picker .uni-picker-container .uni-picker-view-mask {
+	html.theme-thought uni-app .uni-picker-container .uni-picker-view-mask {
 		background-image: linear-gradient(180deg, rgba(20, 20, 25, 0.95), rgba(20, 20, 25, 0.55)),
 			linear-gradient(0deg, rgba(20, 20, 25, 0.95), rgba(20, 20, 25, 0.55));
 	}
@@ -611,15 +608,15 @@
 		background-color: #1A1A1F;
 	}
 
-	html.theme-thought uni-actionsheet .uni-actionsheet__cell {
+	html.theme-thought uni-actionsheet .uni-actionsheet .uni-actionsheet__cell {
 		color: #E8E8EA;
 	}
 
-	html.theme-thought uni-actionsheet .uni-actionsheet__cell:active {
+	html.theme-thought uni-actionsheet .uni-actionsheet .uni-actionsheet__cell:active {
 		background-color: #22232A;
 	}
 
-	html.theme-thought uni-actionsheet .uni-actionsheet__cell:before {
+	html.theme-thought uni-actionsheet .uni-actionsheet .uni-actionsheet__cell:before {
 		border-top-color: #2A2A32;
 	}
 
@@ -627,28 +624,28 @@
 		background-color: #1A1A1F;
 	}
 
-	html.theme-thought uni-modal .uni-modal__title {
+	html.theme-thought uni-modal .uni-modal .uni-modal__title {
 		color: #E8E8EA;
 	}
 
-	html.theme-thought uni-modal .uni-modal__bd {
+	html.theme-thought uni-modal .uni-modal .uni-modal__bd {
 		color: #A3A3AA;
 	}
 
-	html.theme-thought uni-modal .uni-modal__btn:active {
+	html.theme-thought uni-modal .uni-modal .uni-modal__btn:active {
 		background-color: #22232A;
 	}
 
-	html.theme-thought uni-modal .uni-modal__btn_default {
-		color: #85858D;
+	html.theme-thought uni-modal .uni-modal .uni-modal__btn.uni-modal__btn_default {
+		color: #85858D !important;
 	}
 
-	html.theme-thought uni-modal .uni-modal__btn_primary {
+	html.theme-thought uni-modal .uni-modal .uni-modal__btn.uni-modal__btn_primary {
 		color: #E8B341;
 	}
 
-	html.theme-thought uni-modal .uni-modal__ft:after,
-	html.theme-thought uni-modal .uni-modal__btn:after {
+	html.theme-thought uni-modal .uni-modal .uni-modal__ft:after,
+	html.theme-thought uni-modal .uni-modal .uni-modal__btn:after {
 		border-color: #2A2A32;
 	}
 </style>
