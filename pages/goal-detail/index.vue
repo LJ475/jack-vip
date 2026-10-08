@@ -41,9 +41,9 @@
 		<!-- ③ 总体进度卡 -->
 		<view class="progress-card glassmorphism">
 			<view class="progress-top">
-				<view class="ring" :style="{ background: ringBg }">
+				<view class="ring" :class="{ 'ring--pop': ringPop }" :style="{ background: ringBg }">
 					<view class="ring-hole">
-						<text class="ring-pct">{{ percent }}%</text>
+						<text class="ring-pct">{{ displayPercent }}%</text>
 						<text class="ring-label">完成度</text>
 					</view>
 				</view>
@@ -66,7 +66,7 @@
 				</view>
 			</view>
 			<view class="progress-bar-track">
-				<view class="progress-bar-fill" :style="{ width: percent + '%', background: goal.color }"></view>
+				<view class="progress-bar-fill" :style="barStyle"></view>
 			</view>
 			<view class="progress-cheer">
 				<uni-icons type="flag-filled" size="12" :color="goal.color" />
@@ -289,7 +289,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 
@@ -427,9 +427,73 @@ const percent = computed(() => {
 })
 
 const ringBg = computed(() => {
-	const p = percent.value
+	const p = displayPercent.value
 	const color = goal.value ? goal.value.color : 'var(--brand)'
 	return `conic-gradient(${color} 0% ${p}%, rgba(137, 148, 169, 0.22) ${p}% 100%)`
+})
+
+/* ==================== 进度动效 ==================== */
+
+/**
+ * 圆环是 conic-gradient，CSS 过渡不了，所以用 rAF 把百分比补间出来；
+ * 先把值落到位再动画，极端环境（rAF 不跑）也不会卡在 0%。
+ */
+const displayPercent = ref(0)
+const ringPop = ref(false)
+let tweenRaf = null
+let popTimer = null
+
+function hexParts(hex) {
+	const s = (hex || '').replace('#', '')
+	return /^[0-9a-fA-F]{6}$/.test(s) ? s : null
+}
+
+/** 目标色提亮一档，做进度条渐变的高光端 */
+function lighten(hex, t) {
+	const s = hexParts(hex)
+	if (!s) return hex
+	const n = parseInt(s, 16)
+	const f = (v) => Math.round(v + (255 - v) * t)
+	return `rgb(${f((n >> 16) & 255)}, ${f((n >> 8) & 255)}, ${f(n & 255)})`
+}
+
+function rgbaOf(hex, a) {
+	const s = hexParts(hex)
+	if (!s) return 'transparent'
+	const n = parseInt(s, 16)
+	return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`
+}
+
+const barStyle = computed(() => {
+	const c = goal.value ? goal.value.color : 'var(--brand)'
+	return `width: ${displayPercent.value}%; background-image: linear-gradient(90deg, ${c} 0%, ${lighten(c, 0.4)} 100%); box-shadow: 0 0 14rpx ${rgbaOf(c, 0.3)};`
+})
+
+function tweenPercent(to) {
+	const from = displayPercent.value
+	if (from === to) return
+	displayPercent.value = to
+	if (to > from) {
+		ringPop.value = true
+		clearTimeout(popTimer)
+		popTimer = setTimeout(() => { ringPop.value = false }, 640)
+	}
+	cancelAnimationFrame(tweenRaf)
+	const start = Date.now()
+	const dur = 900
+	const step = () => {
+		const k = Math.min(1, (Date.now() - start) / dur)
+		displayPercent.value = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)))
+		if (k < 1) tweenRaf = requestAnimationFrame(step)
+	}
+	tweenRaf = requestAnimationFrame(step)
+}
+
+watch(percent, (v) => tweenPercent(v))
+
+onUnmounted(() => {
+	cancelAnimationFrame(tweenRaf)
+	clearTimeout(popTimer)
 })
 
 const cheerText = computed(() => {
@@ -802,6 +866,17 @@ function saveAmount() {
 		flex-shrink: 0;
 	}
 
+	/* 打卡后圆环弹一下（回弹曲线），配合百分比补间 */
+	.ring--pop {
+		animation: ring-pop 0.64s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes ring-pop {
+		0% { transform: scale(1); }
+		38% { transform: scale(1.07); }
+		100% { transform: scale(1); }
+	}
+
 	.ring-hole {
 		width: 120rpx;
 		height: 120rpx;
@@ -962,8 +1037,23 @@ function saveAmount() {
 		margin-top: 14rpx;
 	}
 
+	/* 点亮当天：从小弹到原尺寸，颜色同时过渡 */
 	.checkin-dot--on {
 		background: var(--goal-accent, var(--brand));
+		animation: dot-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes dot-pop {
+		0% { transform: scale(0.4); }
+		60% { transform: scale(1.3); }
+		100% { transform: scale(1); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ring--pop,
+		.checkin-dot--on {
+			animation: none;
+		}
 	}
 
 	.checkin-dot--today {
