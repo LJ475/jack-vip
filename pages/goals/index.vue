@@ -21,13 +21,17 @@
 					</view>
 				</view>
 			</view>
-			<!-- 目标日期：用 uni 官方 picker（H5/App 均由系统组件呈现，样式在 App.vue 统一覆盖） -->
-			<picker mode="date" :value="endDate" :start="rangeMinDate" @change="onEndDateChange">
-				<view class="overview-range">
-					<text class="overview-range-text">{{ startMonthText }} → {{ endText }}</text>
-					<uni-icons type="compose" size="14" color="var(--text-aux)" />
-				</view>
-			</picker>
+			<!-- 起止时间都可改：起始用 fields="month"（只到月），结束到日；均由 uni 官方 picker 呈现 -->
+			<view class="overview-range">
+				<picker mode="date" fields="month" :value="startMonthValue" :end="endDate" @change="onStartMonthChange">
+					<text class="overview-range-text">{{ startMonthText }}</text>
+				</picker>
+				<text class="range-arrow">→</text>
+				<picker mode="date" :value="endDate" :start="rangeMinDate" @change="onEndDateChange">
+					<text class="overview-range-text">{{ endText }}</text>
+				</picker>
+				<uni-icons type="compose" size="14" color="var(--text-aux)" />
+			</view>
 			<text class="overview-quote">每一个小目标，都是未来的你在靠近</text>
 		</view>
 
@@ -199,6 +203,21 @@ const createVisible = ref(false)
 
 /** 官方 picker 的可选下限：起始月份 1 号（选到起始日之前倒计时会变成 0） */
 const rangeMinDate = computed(() => `${(startMonthText.value || '2026.08').replace('.', '-')}-01`)
+
+/** fields="month" 的 picker 要 'YYYY-MM'，页面里显示用 'YYYY.MM' */
+const startMonthValue = computed(() => (startMonthText.value || '2026.08').replace('.', '-'))
+
+function onStartMonthChange(e) {
+	const v = (e && e.detail && e.detail.value) || ''
+	if (!/^\d{4}-\d{2}$/.test(v)) return
+	if (v >= endDate.value.slice(0, 7)) {
+		uni.showToast({ title: '起始月份要早于结束日期', icon: 'none' })
+		return
+	}
+	startMonthText.value = v.replace('-', '.')
+	persist()
+	uni.showToast({ title: `起始时间已设为 ${startMonthText.value}`, icon: 'none' })
+}
 
 function loadGoals() {
 	let saved = null
@@ -525,6 +544,12 @@ onShow(() => {
 		font-size: 26rpx;
 		font-weight: 600;
 		color: var(--text-secondary);
+		margin-right: 12rpx;
+	}
+
+	.range-arrow {
+		font-size: 26rpx;
+		color: var(--text-aux);
 		margin-right: 12rpx;
 	}
 
