@@ -51,8 +51,8 @@
 			</view>
 		</view>
 
-		<!-- ③ 日历卡片（外壳同 2030 页顶部总览卡，不用毛玻璃） -->
-		<view class="calendar-card">
+		<!-- ③ 日历卡片 -->
+		<view class="calendar-card glassmorphism">
 			<uni-calendar
 				class="calendar"
 				:date="selectedDate"
@@ -409,6 +409,13 @@ onUnmounted(() => {
 		flex-shrink: 0;
 	}
 
+	/* 圆角/描边/投影取「干正事」页 .hero-logo 的同一组值 */
+	.hero-mascot :deep(.ip-img) {
+		border-radius: 28rpx;
+		border: 1rpx solid rgba(255, 255, 255, 0.8);
+		box-shadow: 0 8rpx 24rpx var(--brand-glow-soft);
+	}
+
 	.hero-text {
 		display: flex;
 		flex-direction: column;
@@ -515,19 +522,15 @@ onUnmounted(() => {
 	}
 
 	/* ===== 日历卡片 ===== */
-	/* 外壳照抄 2030 页 .overview-card：实心场景渐变 + 细边框 + radius-xl，
-	   不再挂 .glassmorphism（配色由 App.vue 的 --overview-* 随主题翻转） */
 	.calendar-card {
-		background: var(--overview-bg);
-		border: 1rpx solid var(--overview-border);
-		border-radius: var(--radius-xl);
-		padding: 36rpx 32rpx;
-		margin-bottom: 32rpx;
+		margin-bottom: 24rpx;
 	}
 
-	/* 组件自带白底要去掉，卡片的渐变底才能透出来（只动背景，日历内部排布不变） */
+	/* 让日历组件透出毛玻璃底色（仅调整组件自身背景与分割线，不涉及 .glassmorphism）。
+	   黑金主题经 --cal-content-bg 翻成 Surface 2（#1A1A1F，见 App.vue 主题块）；
+	   用变量间接层而非主题选择器直写，绕开 scoped :deep 规则被编译器丢弃的问题 */
 	.calendar-card :deep(.uni-calendar__content) {
-		background-color: transparent;
+		background-color: var(--cal-content-bg, transparent);
 	}
 
 	.calendar-card :deep(.uni-calendar__header) {
