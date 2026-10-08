@@ -1,0 +1,15 @@
+unpackage/
+.DS_Store
+.hbuilderx/
+
+# 上传产物：文件名里的随机段就是访问密钥，不进仓库
+cos上传用/
+
+# AI 工具的本地工作日志
+.workbuddy-ai/
+
+# 临时脚本与日志
+*.log
+_*.py
+_*.js
+_*.ps1

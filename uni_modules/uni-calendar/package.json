@@ -1,0 +1,12 @@
+{
+  "id": "uni-calendar",
+  "displayName": "uni-calendar 日历",
+  "version": "1.5.12",
+  "description": "日历组件可以查看日期，选择任意范围内的日期，打点操作",
+  "keywords": [
+    "uni-ui",
+    "uniui",
+    "calendar",
+    "日历"
+  ]
+}

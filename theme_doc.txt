@@ -1,0 +1,214 @@
+2030 目标 App · 六套主题配色开发文档
+仅包含主题配色规范，不包含页面布局、组件结构或交互规范。
+一、主题总览
+主题
+模式
+主色
+适用气质
+清新绿
+亮色
+#16B978
+健康、成长、自然
+甜美粉
+亮色
+#EC4F8A
+轻松、生活、年轻
+天空蓝
+亮色
+#1685E8
+科技、理性、清爽
+深空蓝
+暗色
+#22A7F2
+专业、沉浸、科技
+极简灰紫
+暗色
+#9B6DFF
+高级、创作、专注
+黑金
+暗色
+#F3B62C
+目标、财富、高端
+二、颜色 Token 规范
+建议前端统一使用 CSS Variables / Design Tokens，不要在页面组件中直接散落十几个十六进制颜色。人类已经够会制造维护灾难了。
+01 清新绿 · Light Mint
+Token
+HEX
+用途
+--theme-bg
+#F2FFF9
+页面背景
+--theme-surface
+#FFFFFF
+卡片 / 底部导航背景
+--theme-primary
+#16B978
+品牌主色、激活状态、主要进度
+--theme-primary-dark
+#0E9F68
+按压 / Hover / 强调状态
+--theme-primary-soft
+#D9F7EA
+标签、图标底色、浅色强调区域
+--theme-track
+#E6EBEF
+进度条轨道 / 分割弱背景
+--theme-text
+#25313B
+主要文字
+--theme-text-secondary
+#7B8794
+次级文字 / 辅助说明
+02 甜美粉 · Sweet Pink
+Token
+HEX
+用途
+--theme-bg
+#FFF5FA
+页面背景
+--theme-surface
+#FFFFFF
+卡片 / 底部导航背景
+--theme-primary
+#EC4F8A
+品牌主色、激活状态、主要进度
+--theme-primary-dark
+#D93673
+按压 / Hover / 强调状态
+--theme-primary-soft
+#FFE0EC
+标签、图标底色、浅色强调区域
+--theme-track
+#ECE6EB
+进度条轨道 / 分割弱背景
+--theme-text
+#342530
+主要文字
+--theme-text-secondary
+#8A7D86
+次级文字 / 辅助说明
+03 天空蓝 · Sky Blue
+Token
+HEX
+用途
+--theme-bg
+#F2F8FF
+页面背景
+--theme-surface
+#FFFFFF
+卡片 / 底部导航背景
+--theme-primary
+#1685E8
+品牌主色、激活状态、主要进度
+--theme-primary-dark
+#0D6FD1
+按压 / Hover / 强调状态
+--theme-primary-soft
+#DCEEFF
+标签、图标底色、浅色强调区域
+--theme-track
+#E3EAF1
+进度条轨道 / 分割弱背景
+--theme-text
+#243342
+主要文字
+--theme-text-secondary
+#718091
+次级文字 / 辅助说明
+04 深空蓝 · Deep Space
+Token
+HEX
+用途
+--theme-bg
+#07111F
+页面背景
+--theme-surface
+#101B2A
+卡片 / 底部导航背景
+--theme-primary
+#22A7F2
+品牌主色、激活状态、主要进度
+--theme-primary-dark
+#1688D2
+按压 / Hover / 强调状态
+--theme-primary-soft
+#16324A
+标签、图标底色、浅色强调区域
+--theme-track
+#26364A
+进度条轨道 / 分割弱背景
+--theme-text
+#F4F7FA
+主要文字
+--theme-text-secondary
+#9AA8B8
+次级文字 / 辅助说明
+05 极简灰紫 · Slate Purple
+Token
+HEX
+用途
+--theme-bg
+#171922
+页面背景
+--theme-surface
+#20222D
+卡片 / 底部导航背景
+--theme-primary
+#9B6DFF
+品牌主色、激活状态、主要进度
+--theme-primary-dark
+#7C50E8
+按压 / Hover / 强调状态
+--theme-primary-soft
+#30284A
+标签、图标底色、浅色强调区域
+--theme-track
+#353A4A
+进度条轨道 / 分割弱背景
+--theme-text
+#F5F4FA
+主要文字
+--theme-text-secondary
+#9FA3B2
+次级文字 / 辅助说明
+06 黑金 · Black Gold
+Token
+HEX
+用途
+--theme-bg
+#0A0907
+页面背景
+--theme-surface
+#15130F
+卡片 / 底部导航背景
+--theme-primary
+#F3B62C
+品牌主色、激活状态、主要进度
+--theme-primary-dark
+#D99810
+按压 / Hover / 强调状态
+--theme-primary-soft
+#3A2B0D
+标签、图标底色、浅色强调区域
+--theme-track
+#403B31
+进度条轨道 / 分割弱背景
+--theme-text
+#FFF8E7
+主要文字
+--theme-text-secondary
+#B8AD97
+次级文字 / 辅助说明
+三、跨主题通用规则
+主色只负责品牌强调、当前导航、主要进度、关键按钮和选中状态。
+目标卡片中的个人成长 / 财富积累 / 身体状态 / 作品计划可以继续保留各自语义色，不要因为切换主题而全部变成主题主色。
+亮色主题使用低对比度页面背景 + 白色卡片；暗色主题使用深色页面背景 + 略亮的深色卡片。
+暗色主题的主要文字建议使用 #F4F7FA 左右，避免纯白大面积显示导致刺眼。
+进度条轨道使用 --theme-track，已完成部分使用对应主题主色。
+主题切换时只替换 Token，不修改页面结构、间距、字体、图标和组件尺寸。
+所有主题必须保证正文与背景有足够对比度，尤其是辅助文字和进度条。
+四、推荐主题默认顺序
+默认主题：天空蓝。
+亮色可选：清新绿、甜美粉、天空蓝。
+暗色可选：深空蓝、极简灰紫、黑金。
+如果用户没有主动选择主题，建议默认跟随系统明暗模式：白天使用天空蓝，夜间使用深空蓝。

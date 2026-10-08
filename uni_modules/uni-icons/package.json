@@ -1,0 +1,12 @@
+{
+  "id": "uni-icons",
+  "displayName": "uni-icons 图标",
+  "version": "1.5.12",
+  "description": "图标组件，用于展示移动端常见的图标",
+  "keywords": [
+    "uni-ui",
+    "uniui",
+    "icon",
+    "图标"
+  ]
+}
