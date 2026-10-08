@@ -208,7 +208,14 @@
 							<view class="step-btn" @click="stepEditTotal(-1)">
 								<uni-icons type="minus" size="16" color="var(--text)" />
 							</view>
-							<text class="step-num">{{ editTotal }}</text>
+							<input
+								class="step-num step-input"
+								type="number"
+								:value="editTotal"
+								:maxlength="3"
+								@input="onEditTotalInput"
+								@blur="clampEditTotal"
+							/>
 							<view class="step-btn" @click="stepEditTotal(1)">
 								<uni-icons type="plus" size="16" color="var(--text)" />
 							</view>
@@ -556,8 +563,23 @@ function openEditSheet() {
 	editVisible.value = true
 }
 
+// 输入框里可能停着空串或非数字，步进阶与保存都先按数字兜底
+function editTotalNum() {
+	const n = parseInt(editTotal.value, 10)
+	return Number.isNaN(n) ? 1 : n
+}
+
+function onEditTotalInput(e) {
+	// 原样收下，让用户能清空重打；失焦或保存时才收进 1~999
+	editTotal.value = e.detail.value
+}
+
+function clampEditTotal() {
+	editTotal.value = Math.max(1, Math.min(999, editTotalNum()))
+}
+
 function stepEditTotal(delta) {
-	editTotal.value = Math.max(1, Math.min(999, editTotal.value + delta))
+	editTotal.value = Math.max(1, Math.min(999, editTotalNum() + delta))
 }
 
 function saveEdit() {
@@ -568,7 +590,7 @@ function saveEdit() {
 	}
 	goal.value.title = title
 	goal.value.desc = (editDesc.value || '').trim() || '持续推进中'
-	goal.value.total = editTotal.value
+	goal.value.total = Math.max(1, Math.min(999, editTotalNum()))
 	// 按量累计型可改单位；进度按类型由打卡数据立即重算
 	if (goal.value.type === 'amount') goal.value.unit = (editUnit.value || '').trim()
 	recomputeCurrent()
@@ -1419,6 +1441,15 @@ function saveAmount() {
 		font-size: 36rpx;
 		font-weight: 700;
 		color: var(--text);
+	}
+
+	/* 总目标值改成可输入：固定宽度居中，去掉输入框自带的底和框 */
+	.step-input {
+		width: 120rpx;
+		text-align: center;
+		background: transparent;
+		border: none;
+		padding: 0;
 	}
 
 	.start-btn {
