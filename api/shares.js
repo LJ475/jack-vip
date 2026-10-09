@@ -21,11 +21,11 @@ import { request } from '../utils/request.js'
  * 思考实验同理用 thought-manifest-<随机段>.json（还没传就当空内容，不报错）。
  * 清单 404（尚未上传）按「暂无内容」降级；其他错误抛给页面显示重试。
  *
- * —— CloudBase 方案（备用） ——
- * 表 daily_shares：id / share_date / image_url / caption / source_name /
- * created_at / mode（'image' | 'thought'，老数据无 mode 按 image），
- * image_url 存图片公开直链。与 contributors.js 同一套网关与钥匙，
- * 表权限务必只给 anon 开「读」。
+ * —— CloudBase 方案 ——
+ * 表 daily_shares 只有两列：image_url（图片公开直链）/ created_at（发布时间），
+ * 归属哪天由 created_at 的日期部分推出（库里没有日期列，也没有 id）。
+ * 与 contributors.js 同一套网关与钥匙，表权限只给 anon 开「读」。
+ * 思考实验走这张表；专属会员分享仍走上面的 COS 清单（清单为空即无内容）。
  */
 const DATA_SOURCE = 'cos'
 
@@ -124,24 +124,6 @@ export const CONTENT_MODE = {
 
 const MOCK_DELAY = 300
 
-/**
- * 统一后的内容结构：
- * { id, share_date, image_url, caption, source_name, created_at, mode }
- * mode 缺省按 image 处理，兼容历史数据。
- */
-function normalizeShare(raw) {
-	if (!raw) return null
-	return {
-		id: raw.id,
-		share_date: raw.share_date || raw.date || '',
-		image_url: raw.image_url || raw.imageUrl || '',
-		caption: raw.caption || '',
-		source_name: raw.source_name || raw.sourceName || 'Jack',
-		created_at: raw.created_at || raw.createdAt || '',
-		mode: raw.mode === CONTENT_MODE.THOUGHT ? CONTENT_MODE.THOUGHT : CONTENT_MODE.IMAGE
-	}
-}
-
 /* ==================== CloudBase REST（PostgREST 风格） ==================== */
 
 function pad(n) {
@@ -168,25 +150,53 @@ function monthRange(month) {
 	}
 }
 
-function fetchShareDatesFromCloud(month, mode) {
+/** '2026-10-08' -> '2026-10-09'（跨月交给 Date.UTC 处理） */
+function nextDate(date) {
+	const d = new Date(Date.UTC(
+		Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10)) + 1
+	))
+	return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`
+}
+
+/** created_at 是带时区的时刻，按北京时间的自然日圈区间（+ 号必须编码成 %2B） */
+function createdBetween(fromDate, toDateExclusive) {
+	return `created_at=gte.${encodeURIComponent(`${fromDate}T00:00:00+08:00`)}` +
+		`&created_at=lt.${encodeURIComponent(`${toDateExclusive}T00:00:00+08:00`)}`
+}
+
+/** 表里没有 id 和日期列，补齐成页面用的统一结构 */
+function cloudShare(raw, index) {
+	const createdAt = raw.created_at || ''
+	return {
+		id: `${createdAt}-${index}`,
+		share_date: createdAt.slice(0, 10),
+		image_url: raw.image_url || '',
+		caption: '',
+		source_name: '',
+		created_at: createdAt,
+		mode: CONTENT_MODE.THOUGHT
+	}
+}
+
+function fetchShareDatesFromCloud(month) {
 	const range = monthRange(month)
 	if (!range) return Promise.resolve([])
-	const url = `${CLOUDBASE_BASE}/v1/rdb/rest/${TABLE}` +
-		`?select=share_date&mode=eq.${mode}` +
-		`&share_date=gte.${range.start}&share_date=lte.${range.end}`
+	const url = `${CLOUDBASE_BASE}/v1/rdb/rest/${TABLE}?select=created_at` +
+		`&${createdBetween(range.start, nextDate(range.end))}&order=created_at.asc`
 	return request({ url, header: authHeaders() }).then((rows) => {
 		const list = Array.isArray(rows) ? rows : []
-		return [...new Set(list.map((r) => r.share_date))].sort()
+		return [...new Set(list.map((r) => String(r.created_at || '').slice(0, 10)))]
+			.filter(Boolean)
+			.sort()
 	})
 }
 
-function fetchSharesByDateFromCloud(date, mode) {
-	const url = `${CLOUDBASE_BASE}/v1/rdb/rest/${TABLE}` +
-		`?select=*&share_date=eq.${encodeURIComponent(date)}` +
-		`&mode=eq.${mode}&order=created_at.asc`
+function fetchSharesByDateFromCloud(date) {
+	const url = `${CLOUDBASE_BASE}/v1/rdb/rest/${TABLE}?select=image_url,created_at` +
+		`&${createdBetween(date, nextDate(date))}&order=created_at.asc`
 	return request({ url, header: authHeaders() }).then((rows) => {
 		const list = Array.isArray(rows) ? rows : []
-		return list.map(normalizeShare).filter(Boolean)
+		return list.map(cloudShare)
 	})
 }
 
@@ -320,6 +330,11 @@ function mockDelay(data) {
 
 /* ==================== 对外接口 ==================== */
 
+/** 思考实验的内容已经在 CloudBase 表里，固定走它；专属会员分享仍按 DATA_SOURCE */
+function usesCloud(mode) {
+	return DATA_SOURCE === 'cloudbase' || mode === CONTENT_MODE.THOUGHT
+}
+
 /**
  * 获取某个月份有内容的日期集合（日历打点用）
  * @param {string} month 格式 YYYY-MM
@@ -330,8 +345,8 @@ export function getShareDates(month, mode = CONTENT_MODE.IMAGE) {
 	if (DATA_SOURCE === 'mock') {
 		return mockDelay(mockShareDates(month, mode))
 	}
-	if (DATA_SOURCE === 'cloudbase') {
-		return fetchShareDatesFromCloud(month, mode)
+	if (usesCloud(mode)) {
+		return fetchShareDatesFromCloud(month)
 	}
 	// COS 清单：打点失败静默降级为当月无内容（页面已有空态，不打扰）
 	return getManifest(mode)
@@ -349,8 +364,8 @@ export function getSharesByDate(date, mode = CONTENT_MODE.IMAGE) {
 	if (DATA_SOURCE === 'mock') {
 		return mockDelay(mockSharesForDate(date, mode))
 	}
-	if (DATA_SOURCE === 'cloudbase') {
-		return fetchSharesByDateFromCloud(date, mode)
+	if (usesCloud(mode)) {
+		return fetchSharesByDateFromCloud(date)
 	}
 	// COS 清单：内容区失败要抛出去，页面会显示「内容加载失败」+ 重试按钮
 	return getManifest(mode).then((manifest) => sharesFromManifest(manifest, date, mode))
