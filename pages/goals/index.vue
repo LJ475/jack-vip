@@ -64,6 +64,9 @@
 					</view>
 					<text class="goal-desc">{{ g.desc }}</text>
 				</view>
+				<view class="goal-del" @click.stop="askDelete(g)">
+					<uni-icons type="trash" size="18" color="var(--text-weak)" />
+				</view>
 				<uni-icons type="right" size="14" color="var(--text-weak)" />
 			</view>
 			<view class="goal-progress-row">
@@ -226,7 +229,7 @@ function loadGoals() {
 		if (raw && typeof raw === 'object') saved = raw
 	} catch (e) { /* 读不到按首次进入处理 */ }
 
-	if (saved && Array.isArray(saved.goals) && saved.goals.length) {
+	if (saved && Array.isArray(saved.goals)) {
 		goals.value = saved.goals.map((raw) => {
 			const g = normalizeGoal(raw)
 			// 旧数据没有里程碑/记录：按 id 补齐默认目标的里程碑与单位（一次性迁移）
@@ -243,7 +246,8 @@ function loadGoals() {
 		persist() // 把迁移结果落盘，详情页读到的就是新格式
 		return
 	}
-	// 目标删除功能上线前，goals 为空视为异常数据（防写入竞态清库）回种默认值；
+	// 走到这里说明 goals 字段整个丢了或不是数组（首次进入/数据损坏）才回种默认值；
+	// 空数组是「用户把目标删完了」，上面那个分支会照常加载，不能在这里复活。
 	// 但用户自定义的时间范围必须保留
 	if (saved) {
 		startMonthText.value = saved.startMonth || '2026.08'
@@ -427,6 +431,22 @@ function goDetail(g) {
 	uni.navigateTo({ url: `/pages/goal-detail/index?id=${encodeURIComponent(g.id)}` })
 }
 
+/** 列表页直接删：确认文案与目标详情页的删除保持一致 */
+function askDelete(g) {
+	uni.showModal({
+		title: '删除目标',
+		content: '删除后该目标及其记录无法恢复，确定删除吗？',
+		confirmText: '删除',
+		confirmColor: '#FF5F6D',
+		success: (res) => {
+			if (!res.confirm) return
+			goals.value = goals.value.filter((x) => x.id !== g.id)
+			persist()
+			uni.showToast({ title: '已删除', icon: 'none' })
+		}
+	})
+}
+
 onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
@@ -607,6 +627,17 @@ onShow(() => {
 		display: flex;
 		flex-direction: row;
 		align-items: flex-start;
+	}
+
+	/* 删除按钮：尺寸与图标取「干正事」卡片上 .timer-del 的同一组值 */
+	.goal-del {
+		width: 56rpx;
+		height: 56rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-right: 4rpx;
+		flex-shrink: 0;
 	}
 
 	.goal-icon {
