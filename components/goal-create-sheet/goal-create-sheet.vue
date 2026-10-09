@@ -47,12 +47,19 @@
 
 					<text class="field-label field-gap">{{ goalType === 'days' ? '目标天数' : '总目标量' }}</text>
 					<view class="stepper glassmorphism glass-input">
-						<view class="step-btn" :class="{ 'step-disabled': total <= 1 }" @click.stop="stepTotal(-1)">
-							<uni-icons type="minus" size="16" :color="total <= 1 ? 'var(--text-weak)' : 'var(--text)'" />
+						<view class="step-btn" :class="{ 'step-disabled': totalNum <= 1 }" @click.stop="stepTotal(-1)">
+							<uni-icons type="minus" size="16" :color="totalNum <= 1 ? 'var(--text-weak)' : 'var(--text)'" />
 						</view>
-						<text class="step-num">{{ total }}</text>
-						<view class="step-btn" :class="{ 'step-disabled': total >= 999 }" @click.stop="stepTotal(1)">
-							<uni-icons type="plus" size="16" :color="total >= 999 ? 'var(--text-weak)' : 'var(--text)'" />
+						<input
+							class="step-num step-input"
+							type="number"
+							:value="total"
+							:maxlength="3"
+							@input="onTotalInput"
+							@blur="clampTotal"
+						/>
+						<view class="step-btn" :class="{ 'step-disabled': totalNum >= 999 }" @click.stop="stepTotal(1)">
+							<uni-icons type="plus" size="16" :color="totalNum >= 999 ? 'var(--text-weak)' : 'var(--text)'" />
 						</view>
 					</view>
 
@@ -110,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
 	visible: { type: Boolean, default: false }
@@ -150,8 +157,23 @@ watch(() => props.visible, (v) => {
 	}
 })
 
+// 输入框里可能停着空串或非数字，按钮和保存都按数字兜底
+const totalNum = computed(() => {
+	const n = parseInt(total.value, 10)
+	return Number.isNaN(n) ? 1 : n
+})
+
+function onTotalInput(e) {
+	// 原样收下，让用户能清空重打；失焦或保存时才收进 1~999
+	total.value = e.detail.value
+}
+
+function clampTotal() {
+	total.value = Math.max(1, Math.min(999, totalNum.value))
+}
+
 function stepTotal(delta) {
-	total.value = Math.max(1, Math.min(999, total.value + delta))
+	total.value = Math.max(1, Math.min(999, totalNum.value + delta))
 }
 
 function dismissInput() {
@@ -176,7 +198,7 @@ function confirm() {
 	emit('confirm', {
 		name: trimmed,
 		desc: (desc.value || '').trim(),
-		total: total.value,
+		total: Math.max(1, Math.min(999, totalNum.value)),
 		type: goalType.value,
 		unit: (unitInput.value || '').trim(),
 		tag: preset.tag,
@@ -336,6 +358,15 @@ function confirm() {
 		font-weight: 700;
 		color: var(--text);
 		letter-spacing: 2rpx;
+	}
+
+	/* 目标值改成可输入：固定宽度居中，去掉输入框自带的底和框 */
+	.step-input {
+		width: 120rpx;
+		text-align: center;
+		background: transparent;
+		border: none;
+		padding: 0;
 	}
 
 	.step-tip {
