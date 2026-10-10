@@ -17,22 +17,34 @@
 			</view>
 		</view>
 
-		<!-- 展开内容 -->
+		<!-- 展开内容：区块高度封顶，当天写多了在框内滚动，不把卡片撑长 -->
 		<view class="thought-body" v-if="expanded">
-			<!-- 已记录：看全文 + 进本子改 -->
-			<view class="thought-view" v-if="noteText">
-				<text class="thought-text">{{ noteText }}</text>
+			<view class="thought-view" v-if="notes.length">
+				<scroll-view scroll-y class="thought-list">
+					<view
+						class="thought-item"
+						v-for="n in notes"
+						:key="n.id"
+						@click="openNotebook(n.id)"
+					>
+						<view class="thought-item-main">
+							<text class="thought-item-text">{{ firstLine(n.text) }}</text>
+							<text class="thought-item-time" v-if="n.updatedAt">{{ timeOf(n.updatedAt) }}</text>
+						</view>
+						<uni-icons type="right" size="12" color="var(--text-weak)" />
+					</view>
+				</scroll-view>
 				<view class="thought-view-foot">
-					<text class="thought-hint" v-if="noteUpdatedAt">记录于 {{ noteUpdatedAt }}</text>
+					<text class="thought-hint">共 {{ notes.length }} 篇</text>
 					<view class="thought-view-foot-space"></view>
-					<button class="btn btn-ghost btn-sm" @click="openNotebook">写本子</button>
+					<button class="btn btn-ghost btn-sm" @click="openNotebook()">再写一篇</button>
 				</view>
 			</view>
 
 			<!-- 未记录：引导 -->
 			<view class="thought-view thought-view-empty" v-else>
 				<text class="thought-placeholder">这一天还没有记录，点开本子写几句自己的想法吧</text>
-				<button class="btn btn-primary btn-sm thought-start-btn" @click="openNotebook">去记录</button>
+				<button class="btn btn-primary btn-sm thought-start-btn" @click="openNotebook()">去记录</button>
 			</view>
 		</view>
 	</view>
@@ -40,7 +52,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { getNote, calcStreak } from '@/utils/thought-notes.js'
+import { getNotes, calcStreak } from '@/utils/thought-notes.js'
 
 const props = defineProps({
 	/** 记录归属的日期 YYYY-MM-DD */
@@ -48,15 +60,12 @@ const props = defineProps({
 })
 
 const expanded = ref(false)
-const noteText = ref('')
-const noteUpdatedAt = ref('')
+const notes = ref([])
 const streak = ref(0)
 
 /** 切换日期时收起并重读当天的记录 */
 function refresh() {
-	const rec = getNote(props.date)
-	noteText.value = (rec && rec.text) || ''
-	noteUpdatedAt.value = (rec && rec.updatedAt) || ''
+	notes.value = getNotes(props.date)
 	streak.value = calcStreak()
 	expanded.value = false
 }
@@ -71,9 +80,22 @@ function toggleExpand() {
 	expanded.value = !expanded.value
 }
 
-/** 打开整屏本子页写这条 */
-function openNotebook() {
-	uni.navigateTo({ url: `/pages/thought-notebook/index?date=${encodeURIComponent(props.date)}` })
+/** 列表里每条只显示首行，够长的靠省略号 */
+function firstLine(text) {
+	const line = String(text || '').split('\n')[0].trim()
+	return line || '（空白）'
+}
+
+/** 'YYYY-MM-DD HH:mm' → 'HH:mm' */
+function timeOf(updatedAt) {
+	const m = /\s(\d{2}:\d{2})$/.exec(updatedAt || '')
+	return m ? m[1] : ''
+}
+
+/** 进本子页：带 id 是改那一篇，不带是新建一篇 */
+function openNotebook(id) {
+	const q = `date=${encodeURIComponent(props.date)}` + (id ? `&id=${encodeURIComponent(id)}` : '')
+	uni.navigateTo({ url: `/pages/thought-notebook/index?${q}` })
 }
 </script>
 
@@ -133,12 +155,39 @@ function openNotebook() {
 		padding: 0 28rpx 24rpx;
 	}
 
-	.thought-text {
+	/* 区块高度封顶：约 4 条，写多了在框内滚动，卡片本身不再被长文撑长 */
+	.thought-list {
+		max-height: 396rpx;
+	}
+
+	.thought-item {
+		display: flex;
+		align-items: center;
+		padding: 18rpx 0;
+		border-bottom: 1rpx solid var(--divider);
+	}
+
+	.thought-item-main {
+		flex: 1;
+		min-width: 0;
+		margin-right: 12rpx;
+	}
+
+	.thought-item-text {
 		display: block;
 		font-size: 26rpx;
 		color: var(--text-secondary);
-		line-height: 1.7;
-		word-break: break-all;
+		line-height: 1.5;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.thought-item-time {
+		display: block;
+		font-size: 20rpx;
+		color: var(--text-weak);
+		margin-top: 6rpx;
 	}
 
 	.thought-view-foot {

@@ -38,13 +38,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
-import { NOTE_MAX_LEN, getNote, saveNote } from '@/utils/thought-notes.js'
+import { NOTE_MAX_LEN, getNoteById, addNote, updateNote } from '@/utils/thought-notes.js'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 
 const WEEKS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 const date = ref('')
+// 有 id = 在改那一天里已有的某一篇；空 = 新写一篇（同一天可以写多篇）
+const noteId = ref('')
 const draft = ref('')
 // 进入时那份原文，用来判断有没有改动（没改动就不写存储、也不刷新「记录于」时间）
 const original = ref('')
@@ -64,7 +66,9 @@ const weekText = computed(() => {
 
 onLoad((query) => {
 	date.value = (query && query.date) || ''
-	const rec = getNote(date.value)
+	noteId.value = (query && query.id) || ''
+	const rec = noteId.value ? getNoteById(date.value, noteId.value) : null
+	if (!rec) noteId.value = ''
 	original.value = (rec && rec.text) || ''
 	draft.value = original.value
 	// 这个页面是新开的 webview，底色跟着主题先刷一遍，否则暗色下进本页会闪一下浅蓝
@@ -80,11 +84,22 @@ onLoad((query) => {
 	})
 })
 
-/** 落盘：内容为空时按「没记录」处理（utils/thought-notes.js 里会删掉那条） */
+/** 落盘：改已有的就更新那一篇；新写的就追加一篇。
+ *  内容清空 = 删掉那一篇（utils/thought-notes.js 里处理），保持「没记录」的语义。 */
 function commit() {
 	if (!dirty.value) return
-	const saved = saveNote(date.value, draft.value)
-	original.value = saved.text
+	if (noteId.value) {
+		const saved = updateNote(date.value, noteId.value, draft.value)
+		original.value = saved.removed ? '' : saved.text
+		if (saved.removed) noteId.value = ''
+		return
+	}
+	if (!(draft.value || '').trim()) return
+	const added = addNote(date.value, draft.value)
+	if (added) {
+		noteId.value = added.id
+		original.value = added.text
+	}
 }
 
 function close() {
