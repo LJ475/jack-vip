@@ -108,15 +108,20 @@ onUnload(() => {
 		box-sizing: border-box;
 		padding: calc(var(--status-bar-height, 0px) + 12rpx) 28rpx calc(env(safe-area-inset-bottom) + 16rpx);
 		/* 亮色：米白纸张 + 浅灰行线 */
+		--nb-page-bg: linear-gradient(135deg, #edf4ff, #f8fbff);
 		--nb-paper: #FFFDF6;
 		--nb-line: rgba(23, 33, 58, 0.13);
 		--nb-ink: #333333;
 		--nb-ink-soft: #8994A9;
-		background: linear-gradient(135deg, #edf4ff, #f8fbff);
+		background: var(--nb-page-bg);
 	}
 
+	/* 注意：这条必须同时改写页面底色。App.vue 里暗色那条是 .theme-thought（一级类），
+	   而这里的浅色底是 .notebook + scoped 属性（两级），不一起改的话暗色下纸是黑的、
+	   纸外面还是浅蓝，顶部日期也会变成浅字亮底看不见。 */
 	.notebook.theme-thought {
-		/* 暗色：墨黑纸张 + 弱金行线 */
+		/* 暗色：墨黑纸 + 弱金行线 */
+		--nb-page-bg: linear-gradient(180deg, #0C0C11 0%, #0B0B0F 100%);
 		--nb-paper: #101014;
 		--nb-line: rgba(232, 179, 65, 0.13);
 		--nb-ink: #E8E8EA;
