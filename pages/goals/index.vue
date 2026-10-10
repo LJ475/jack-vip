@@ -125,7 +125,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
-import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
 
 // 本页数据全部本地存储；首次进入用默认目标播种，之后以本机数据为准
 const STORAGE_KEY = 'goals2030'
@@ -456,6 +456,7 @@ function askDelete(g) {
 }
 
 onShow(() => {
+	hideNativeTabBar()
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)

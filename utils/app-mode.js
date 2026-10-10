@@ -26,6 +26,16 @@ export function resetAppMode() {
 	} catch (e) { /* 忽略 */ }
 }
 
+/** 原生 tabBar 兜底隐藏：只在 App 端需要。
+ *  onLaunch 那次不够——那时页面 webview 还没 append 进原生 tabview，hide 被吞，
+ *  tabview 一挂上页面又把条画回来（就是「两条底部栏」）。每个 tab 页 onShow 再调一次，
+ *  switchTab 后也一定走到这里。H5 端 onLaunch 那次已经把 DOM 那条挡掉了。 */
+export function hideNativeTabBar() {
+	// #ifdef APP-PLUS
+	uni.hideTabBar({ animation: false })
+	// #endif
+}
+
 /** 状态栏文字颜色 + 页面窗口层底色跟随主题；仅 App 端生效 */
 export function syncStatusBarTheme(mode) {
 	// #ifdef APP-PLUS

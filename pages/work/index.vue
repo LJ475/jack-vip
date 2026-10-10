@@ -180,7 +180,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
-import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
 import {
 	listTimers,
 	saveTimers,
@@ -440,6 +440,7 @@ onMounted(() => {
 onShow(() => {
 	const due = checkPendingAlarm()
 	if (due) handleAlarmDue(due)
+	hideNativeTabBar()
 	// 主题跟随全局模式 + 状态栏文字颜色同步
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)

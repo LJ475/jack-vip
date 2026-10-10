@@ -163,7 +163,7 @@ import { ref, computed } from 'vue'
 import { onShow, onHide } from '@dcloudio/uni-app'
 import { getShareDates, getSharesByDate, getMonthShares, CONTENT_MODE } from '@/api/shares.js'
 import { checkPendingAlarm } from '@/api/countdown.js'
-import { getAppMode, setAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { getAppMode, setAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
 
 const STORAGE_KEY = 'lastSelectedDate'
 
@@ -417,6 +417,7 @@ let alarmChecker = null
 
 onShow(() => {
 	gotoWorkIfAlarmDue()
+	hideNativeTabBar()
 	// 状态栏文字颜色跟随当前主题（切页/回前台可能被系统重置，回前台补一次）
 	syncStatusBarTheme(mode.value)
 	// 兜底轮询只在可见时跑：tab 页现在切走不销毁，常驻会把隐藏的页面变成能抢跳转的后台
