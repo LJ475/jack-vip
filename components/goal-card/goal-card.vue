@@ -1,5 +1,5 @@
 <template>
-	<view class="goal-card glassmorphism" @click="onTap">
+	<view class="goal-card" @click="onTap">
 		<view class="goal-main">
 			<!-- 骨架走同一个外壳、同一组类，只换内部内容，首帧尺寸与真卡片一致 -->
 			<template v-if="loading">
@@ -73,9 +73,25 @@ function onTap() {
 </script>
 
 <style scoped>
+	/* 这张卡不用 .glassmorphism 的 backdrop-filter：2030 页 4 张卡各带一层实时模糊，
+	   滚动时每帧都要重算背后区域，是那个页面掉帧的大头。改用半透明底 + 描边 + 阴影，
+	   观感接近（仍通透），但不再有每帧的模糊计算。底部那条玻璃导航栏不在此列，保留模糊。 */
 	.goal-card {
 		padding: 28rpx;
 		margin-bottom: 24rpx;
+		position: relative;
+		background: rgba(255, 255, 255, 0.72);
+		border: 1rpx solid rgba(255, 255, 255, 0.7);
+		border-radius: 32rpx;
+		box-shadow: 0 8rpx 32rpx rgba(31, 45, 61, 0.12);
+	}
+
+	.theme-thought .goal-card {
+		background: rgba(20, 20, 25, 0.92);
+		border-color: #2A2A32;
+		border-radius: 52rpx;
+		box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.35),
+			inset 0 1rpx 0 rgba(255, 240, 200, 0.12);
 	}
 
 	.goal-main {

@@ -713,7 +713,7 @@ const isDaysType = computed(() => (goal.value ? goal.value.type !== 'amount' : t
 const checkinBtnText = computed(() => {
 	if (!goal.value) return '今日打卡'
 	if (!isDaysType.value) return checkedToday.value ? '再记一笔' : '今日打卡'
-	return checkedToday.value ? '今日已打卡' : '今日打卡'
+	return checkedToday.value ? '撤销今日打卡' : '今日打卡'
 })
 
 function onCheckinTap() {
@@ -721,6 +721,10 @@ function onCheckinTap() {
 	if (!isDaysType.value) {
 		amountInput.value = ''
 		amountVisible.value = true
+		return
+	}
+	if (checkedToday.value) {
+		onCheckinUndo()
 		return
 	}
 	onCheckin()
@@ -743,7 +747,10 @@ const streakDays = computed(() => {
 const checkinSummary = computed(() => {
 	if (!goal.value) return ''
 	const total = goal.value.checkins.length
-	return streakDays.value > 1 ? `累计 ${total} 天 · 连续 ${streakDays.value} 天` : `累计 ${total} 天`
+	const base = streakDays.value > 1 ? `累计 ${total} 天 · 连续 ${streakDays.value} 天` : `累计 ${total} 天`
+	// 打满目标后天数还在涨，进度条封顶不动，这里把超出的部分说出来，别让人以为打卡没生效
+	const extra = isDaysType.value ? Math.max(0, total - goal.value.total) : 0
+	return extra > 0 ? `${base} · 已超额 ${extra} 天` : base
 })
 
 /** 今日打卡（按天坚持型）：写 checkins 并同步进度（= 打卡天数封顶总目标），一天一次幂等 */
@@ -755,6 +762,19 @@ function onCheckin() {
 	goal.value.records.unshift({ date: today, text: '每日打卡', tag: '打卡' })
 	saveGoalToStorage(goal.value)
 	uni.showToast({ title: '打卡成功', icon: 'success' })
+}
+
+/** 撤销今日打卡：把今天从 checkins 里摘掉，并删掉记录里那条「每日打卡」 */
+function onCheckinUndo() {
+	if (!goal.value || !checkedToday.value) return
+	const today = todayText()
+	const i = goal.value.checkins.indexOf(today)
+	if (i > -1) goal.value.checkins.splice(i, 1)
+	const r = goal.value.records.findIndex((x) => x && x.tag === '打卡' && x.date === today)
+	if (r > -1) goal.value.records.splice(r, 1)
+	recomputeCurrent()
+	saveGoalToStorage(goal.value)
+	uni.showToast({ title: '已撤销今日打卡', icon: 'none' })
 }
 
 /* ==================== 数值打卡（按量累计型） ==================== */
