@@ -67,19 +67,17 @@ onLoad((query) => {
 	const rec = getNote(date.value)
 	original.value = (rec && rec.text) || ''
 	draft.value = original.value
-	// 奶酪体只在这一页按需加载：不写进全局 CSS，首页与切页不为它买单。
-	// 也不能写在样式里用 url()——vite 编译期会去解析这个文件，字体没到位时整个包都编不过。
-	uni.loadFontFace({
-		family: 'NailaoHand',
-		src: 'url("/static/fonts/nailao.ttf")',
-		global: true,
-		fail: () => {
-			// 字体文件还没放进来时用系统字体，不阻塞写东西
-		}
-	})
 	// 这个页面是新开的 webview，底色跟着主题先刷一遍，否则暗色下进本页会闪一下浅蓝
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	// 奶酪体只在这一页按需加载：不写进全局 CSS，首页与切页不为它买单。
+	// 也不能写在 <style> 的 @font-face url() 里——vite 编译期会去解析该文件，字体没到位时整个包编不过。
+	// 参数名是 source（不是 src）：uni-h5 的实现里直接 source.startsWith()，传错会抛异常打断 onLoad。
+	uni.loadFontFace({
+		family: 'NailaoHand',
+		source: 'url("/static/fonts/nailao.ttf")',
+		global: true
+	})
 })
 
 /** 落盘：内容为空时按「没记录」处理（utils/thought-notes.js 里会删掉那条） */
