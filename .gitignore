@@ -13,3 +13,7 @@ cos上传用/
 _*.py
 _*.js
 _*.ps1
+
+# 云函数依赖与上传包（体积大、可重建）
+node_modules/
+cloudfunctions/**/*.zip
