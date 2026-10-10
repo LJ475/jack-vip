@@ -29,6 +29,26 @@
 			}
 		}
 	],
+	"tabBar": {
+		"color": "#8994A9",
+		"selectedColor": "#3A83F7",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/calendar/index",
+				"text": "分享"
+			},
+			{
+				"pagePath": "pages/goals/index",
+				"text": "2030"
+			},
+			{
+				"pagePath": "pages/work/index",
+				"text": "干正事"
+			}
+		]
+	},
 	"globalStyle": {
 		"navigationStyle": "custom",
 		"navigationBarTextStyle": "black",

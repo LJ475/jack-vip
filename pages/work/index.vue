@@ -178,7 +178,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 import {
@@ -434,7 +434,19 @@ onMounted(() => {
 	ensureNotifyPermission()
 	timers.value = listTimers()
 	ready.value = true
-	uiTimer = setInterval(() => {
+})
+
+// 从其它页面/后台回到本页：检查是否有到点闹钟（闹钟会把 App 拉到前台）
+onShow(() => {
+	const due = checkPendingAlarm()
+	if (due) handleAlarmDue(due)
+	// 主题跟随全局模式 + 状态栏文字颜色同步
+	themeMode.value = getAppMode()
+	syncStatusBarTheme(themeMode.value)
+	syncRootTheme(themeMode.value)
+	// tab 页切走不再销毁，秒级轮询跟着显示/隐藏启停：
+	// 停在后台还在轮询闹钟，会在别的页面上抢着响铃、抢着落库
+	if (!uiTimer) uiTimer = setInterval(() => {
 		nowTs.value = Date.now()
 
 		// 有到期的原生闹钟 → 响铃
@@ -462,14 +474,11 @@ onMounted(() => {
 	}, 1000)
 })
 
-// 从其它页面/后台回到本页：检查是否有到点闹钟（闹钟会把 App 拉到前台）
-onShow(() => {
-	const due = checkPendingAlarm()
-	if (due) handleAlarmDue(due)
-	// 主题跟随全局模式 + 状态栏文字颜色同步
-	themeMode.value = getAppMode()
-	syncStatusBarTheme(themeMode.value)
-	syncRootTheme(themeMode.value)
+onHide(() => {
+	if (uiTimer) {
+		clearInterval(uiTimer)
+		uiTimer = null
+	}
 })
 
 onUnmounted(() => {

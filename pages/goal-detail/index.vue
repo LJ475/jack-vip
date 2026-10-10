@@ -446,7 +446,8 @@ function goBack() {
 	if (pages.length > 1) {
 		uni.navigateBack()
 	} else {
-		uni.reLaunch({ url: '/pages/goals/index' })
+		// 目标是 tabBar 页：用 switchTab（reLaunch 会连目标页一起重建，切回来闪一下白）
+		uni.switchTab({ url: '/pages/goals/index' })
 	}
 }
 

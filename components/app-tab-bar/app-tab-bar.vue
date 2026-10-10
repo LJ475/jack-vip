@@ -48,7 +48,9 @@ export default {
 	methods: {
 		switchTab(index) {
 			if (this.current === index) return
-			uni.reLaunch({ url: this.tabs[index].path })
+			// 用 switchTab 而不是 reLaunch：tab 页被运行时缓存（App 端只是切换 webview 显隐、
+			// H5 端 KeepAlive），页面不销毁就不会出现「导航栏+内容一起消失再长回来」的空窗
+			uni.switchTab({ url: this.tabs[index].path })
 		}
 	}
 }

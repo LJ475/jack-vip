@@ -6,6 +6,10 @@
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
+			// 三个 tab 页声明在 pages.json 的 tabBar 里，是为了让 switchTab 缓存页面（切页不再销毁重建）；
+			// 底部那条栏仍由 components/app-tab-bar 自己画，原生这条开屏即隐藏：
+			// App 端隐藏后 tabBarView.height 取 0（不占布局），H5 端 shown=false 直接不渲染 DOM。
+			uni.hideTabBar({ animation: false })
 			// 每次冷启动默认进入「图片分享」（蓝色主题）；模式仅在本次会话内跨页保持
 			resetAppMode()
 		},

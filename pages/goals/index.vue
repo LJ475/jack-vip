@@ -122,8 +122,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { ref, computed, watch, onUnmounted } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 
@@ -332,16 +332,9 @@ function pad(n) {
 }
 
 // 秒级刷新（仅本页显示用）；进场时目标卡进度条延迟一拍从 0 展开
+// tab 页切走不再销毁，这两个计时器改成随显示/隐藏启停，免得在后台空转
 let tickTimer = null
 let barsTimer = null
-onMounted(() => {
-	tickTimer = setInterval(() => {
-		nowTs.value = Date.now()
-	}, 1000)
-	barsTimer = setTimeout(() => {
-		barsIn.value = true
-	}, 150)
-})
 
 onUnmounted(() => {
 	if (tickTimer) clearInterval(tickTimer)
@@ -468,7 +461,27 @@ onShow(() => {
 	syncRootTheme(themeMode.value)
 	loadGoals()
 	ready.value = true
+	if (tickTimer) clearInterval(tickTimer)
+	tickTimer = setInterval(() => {
+		nowTs.value = Date.now()
+	}, 1000)
+	if (barsTimer) clearTimeout(barsTimer)
+	barsIn.value = false
+	barsTimer = setTimeout(() => {
+		barsIn.value = true
+	}, 150)
 	playEnterAnimations()
+})
+
+onHide(() => {
+	if (tickTimer) {
+		clearInterval(tickTimer)
+		tickTimer = null
+	}
+	if (barsTimer) {
+		clearTimeout(barsTimer)
+		barsTimer = null
+	}
 })
 </script>
 

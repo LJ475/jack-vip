@@ -4,7 +4,7 @@ import { CONTENT_MODE } from '../api/shares.js'
  * 全局内容模式（主题跟着走）：
  *   - 专属会员分享 → 蓝色主题（默认）
  *   - 365天思考实验 → 黑色主题
- * 借 storage 在两个页面间共享（TabBar 用 reLaunch 切页，onShow 时重读）；
+ * 借 storage 在两个页面间共享（TabBar 用 switchTab 切页，页面缓存但 onShow 每次都会触发，进来时重读）；
  * App 冷启动时由 App.vue 调 resetAppMode() 回到默认的专属会员分享。
  */
 const MODE_KEY = 'lastContentMode'
