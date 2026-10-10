@@ -61,7 +61,7 @@
 		>
 			<view class="timer-info">
 				<text class="timer-title">{{ t.title }}</text>
-				<text class="timer-duration">{{ cardTime(t) }}</text>
+				<timer-countdown class="timer-duration" :timer="t" />
 				<text class="timer-meta">{{ cardMeta(t) }}</text>
 			</view>
 			<view class="timer-del" @click.stop="removeTimer(t)">
@@ -109,7 +109,7 @@
 
 							<!-- 运行中 -->
 							<template v-else>
-								<text class="remain-text">{{ formatHMS(remainingOf(selectedTimer) / 1000) }}</text>
+								<timer-countdown class="remain-text" :timer="selectedTimer" />
 								<text class="remain-meta">闹钟已设 · 进行中</text>
 								<view class="remain-tip">
 									到点后 App 会自动弹出并响铃/震动（系统级闹钟，杀掉应用也生效）；此数字仅为界面展示。
@@ -199,23 +199,12 @@ import {
 	RINGTONE_SRC,
 	TIMER_STATUS
 } from '@/api/countdown.js'
-
-function pad(n) {
-	return String(n).padStart(2, '0')
-}
+import { nowTs, subscribeClock, unsubscribeClock } from '@/utils/ticker.js'
 
 // 本页没有模式切换入口，主题跟随全局内容模式（日历页切换后经 storage 传过来）：
 // 专属会员分享 = 蓝色主题，365天思考实验 = 黑色主题
 const themeMode = ref(getAppMode())
 const isThoughtTheme = computed(() => themeMode.value === CONTENT_MODE.THOUGHT)
-
-function formatHMS(totalSec) {
-	const s = Math.max(0, Math.floor(totalSec))
-	const h = Math.floor(s / 3600)
-	const m = Math.floor((s % 3600) / 60)
-	const sec = s % 60
-	return `${pad(h)}:${pad(m)}:${pad(sec)}`
-}
 
 // 页面状态
 const timers = ref([])
@@ -224,7 +213,6 @@ const ready = ref(false)
 const createVisible = ref(false)
 const selectedTimer = ref(null)
 const statusVisible = ref(false)
-const nowTs = ref(Date.now())
 const ringing = ref(null)
 
 function persist() {
@@ -360,13 +348,6 @@ function remainingOf(t) {
 	return (t.startedAt || 0) + t.durationSeconds * 1000 - nowTs.value
 }
 
-function cardTime(t) {
-	if (t.status === TIMER_STATUS.RUNNING) {
-		return formatHMS(remainingOf(t) / 1000)
-	}
-	return formatHMS(t.durationSeconds)
-}
-
 function cardMeta(t) {
 	switch (t.status) {
 		case TIMER_STATUS.IDLE: return '系统闹钟 · 未启动'
@@ -445,11 +426,10 @@ onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	subscribeClock()
 	// tab 页切走不再销毁，秒级轮询跟着显示/隐藏启停：
 	// 停在后台还在轮询闹钟，会在别的页面上抢着响铃、抢着落库
 	if (!uiTimer) uiTimer = setInterval(() => {
-		nowTs.value = Date.now()
-
 		// 有到期的原生闹钟 → 响铃
 		const due = checkPendingAlarm()
 		if (due) handleAlarmDue(due)
@@ -476,6 +456,7 @@ onShow(() => {
 })
 
 onHide(() => {
+	unsubscribeClock()
 	if (uiTimer) {
 		clearInterval(uiTimer)
 		uiTimer = null

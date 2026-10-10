@@ -9,7 +9,7 @@
 					<view class="overview-days">
 						<text class="days-num">{{ daysLeftText }}</text>
 						<text class="days-unit">天</text>
-						<text class="days-tick">{{ tickText }}</text>
+						<countdown-tick class="days-tick" :end-ts="endTs" />
 					</view>
 				</view>
 				<view class="ring-wrap">
@@ -126,6 +126,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
+import { nowTs, subscribeClock, unsubscribeClock } from '@/utils/ticker.js'
 
 // 本页数据全部本地存储；首次进入用默认目标播种，之后以本机数据为准
 const STORAGE_KEY = 'goals2030'
@@ -307,7 +308,6 @@ const endYear = computed(() => (endDate.value || '2030-12-31').slice(0, 4))
 const endText = computed(() => (endDate.value || '2030-12-31').slice(0, 7).replace('-', '.'))
 
 /** 距离目标日期的剩余天数——实时计算，跨天自动减 1 */
-const nowTs = ref(Date.now())
 
 const realDaysLeft = computed(() => Math.max(0, Math.ceil((endTs.value - nowTs.value) / 86400000)))
 
@@ -316,28 +316,10 @@ const displayDays = ref(0)
 
 const daysLeftText = computed(() => String(Math.round(displayDays.value)).replace(/\B(?=(\d{3})+(?!\d))/g, ','))
 
-/** 天数之外的剩余 时:分:秒（秒级跳动，让倒计时"活"起来） */
-const tickText = computed(() => {
-	let remain = Math.max(0, endTs.value - nowTs.value)
-	const days = Math.floor(remain / 86400000)
-	remain -= days * 86400000
-	const h = Math.floor(remain / 3600000)
-	const m = Math.floor((remain % 3600000) / 60000)
-	const s = Math.floor((remain % 60000) / 1000)
-	return `${pad(h)}:${pad(m)}:${pad(s)}`
-})
-
-function pad(n) {
-	return String(n).padStart(2, '0')
-}
-
-// 秒级刷新（仅本页显示用）；进场时目标卡进度条延迟一拍从 0 展开
-// tab 页切走不再销毁，这两个计时器改成随显示/隐藏启停，免得在后台空转
-let tickTimer = null
+// 进场时目标卡进度条延迟一拍从 0 展开；秒级时钟本身在 utils/ticker.js，按订阅数启停
 let barsTimer = null
 
 onUnmounted(() => {
-	if (tickTimer) clearInterval(tickTimer)
 	if (barsTimer) clearTimeout(barsTimer)
 	cancelAnimationFrame(percentRaf.value)
 	cancelAnimationFrame(daysRaf.value)
@@ -462,10 +444,7 @@ onShow(() => {
 	syncRootTheme(themeMode.value)
 	loadGoals()
 	ready.value = true
-	if (tickTimer) clearInterval(tickTimer)
-	tickTimer = setInterval(() => {
-		nowTs.value = Date.now()
-	}, 1000)
+	subscribeClock()
 	if (barsTimer) clearTimeout(barsTimer)
 	barsIn.value = false
 	barsTimer = setTimeout(() => {
@@ -475,10 +454,7 @@ onShow(() => {
 })
 
 onHide(() => {
-	if (tickTimer) {
-		clearInterval(tickTimer)
-		tickTimer = null
-	}
+	unsubscribeClock()
 	if (barsTimer) {
 		clearTimeout(barsTimer)
 		barsTimer = null
