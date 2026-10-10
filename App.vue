@@ -73,6 +73,14 @@
 		background: #0B0B0F;
 	}
 
+	/* 切页面会先画出页面外壳的底色，而 page 的浅蓝渐变在 H5 编译到 uni-page-body、
+	   在 App 端仍是 page，暗色只覆盖在页面根元素上（在这层之内），所以切页/回弹会闪白。 */
+	html.theme-thought page,
+	html.theme-thought uni-page-body,
+	html.theme-thought body {
+		background: #0B0B0F;
+	}
+
 	page {
 		/* ===== 品牌色系（图片分享 = 蓝色主题） ===== */
 		--brand: #3A83F7;
