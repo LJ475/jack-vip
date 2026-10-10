@@ -53,7 +53,7 @@ const props = defineProps({
 	share: { type: Object, default: null }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'preview'])
 
 const isThought = computed(() => props.share && props.share.mode === 'thought')
 
@@ -79,10 +79,9 @@ const detailDateText = computed(() => {
 function previewImage() {
 	const url = props.share && props.share.image_url
 	if (!url) return
-	// H5 下弹层蒙层与全屏预览层叠加会互相干扰（预览层已挂载但不上屏），
-	// 先关弹层再拉起全屏预览；预览层挂在 body 下，不随弹层卸载消失
-	emit('close')
-	uni.previewImage({ urls: [url], current: url })
+	// 交给页面打开全屏预览层（要拿当月内容才能左右跨天滑），
+	// H5 下弹层蒙层与全屏预览层叠加会互相干扰，所以由页面先关弹层
+	emit('preview', props.share)
 }
 
 function saveImage() {

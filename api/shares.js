@@ -396,3 +396,24 @@ export function getSharesByDate(date, mode = CONTENT_MODE.IMAGE) {
 	// COS 清单：内容区失败要抛出去，页面会显示「内容加载失败」+ 重试按钮
 	return getManifest(mode).then((manifest) => sharesFromManifest(manifest, date, mode))
 }
+
+/**
+ * 整月内容列表（全屏预览层左右滑动跨天用）
+ * CloudBase 复用同一份月缓存，所以打开预览通常不再发请求。
+ * @param {string} month 格式 YYYY-MM
+ * @param {string} [mode] 内容模式
+ * @returns {Promise<Array>} 按 created_at 升序的该月全部内容
+ */
+export function getMonthShares(month, mode = CONTENT_MODE.IMAGE) {
+	if (!/^\d{4}-\d{2}$/.test(month || '')) return Promise.resolve([])
+	if (DATA_SOURCE === 'mock') {
+		const list = mockShareDates(month, mode)
+			.reduce((acc, d) => acc.concat(mockSharesForDate(d, mode)), [])
+		return mockDelay(list)
+	}
+	if (usesCloud(mode)) return getCloudMonth(month)
+	return getManifest(mode).then((manifest) =>
+		datesFromManifest(manifest, month)
+			.reduce((acc, d) => acc.concat(sharesFromManifest(manifest, d, mode)), [])
+	)
+}

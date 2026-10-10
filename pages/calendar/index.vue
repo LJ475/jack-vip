@@ -139,6 +139,15 @@
 			:visible="detailVisible"
 			:share="selectedShare"
 			@close="closeDetail"
+			@preview="onDetailPreview"
+		/>
+
+		<!-- ⑤b 全屏图片预览：左右滑动跨天，顶部日期跟着当前图变 -->
+		<image-viewer
+			:visible="viewerVisible"
+			:items="viewerItems"
+			:index="viewerIndex"
+			@close="viewerVisible = false"
 		/>
 
 		<!-- ⑥ 关于我（抖音二维码 Sheet） -->
@@ -150,9 +159,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
-import { getShareDates, getSharesByDate, CONTENT_MODE } from '@/api/shares.js'
+import { ref, computed } from 'vue'
+import { onShow, onHide } from '@dcloudio/uni-app'
+import { getShareDates, getSharesByDate, getMonthShares, CONTENT_MODE } from '@/api/shares.js'
 import { checkPendingAlarm } from '@/api/countdown.js'
 import { getAppMode, setAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 
@@ -191,6 +200,10 @@ const loading = ref(false)
 const loadError = ref(false)
 const detailVisible = ref(false)
 const selectedShare = ref(null)
+// 全屏预览：items 是当月的全部内容（跨天滑动），index 指向当前这张
+const viewerVisible = ref(false)
+const viewerItems = ref([])
+const viewerIndex = ref(0)
 
 /**
  * 日历打点数据。
@@ -320,10 +333,31 @@ function openDetail(share) {
 	detailVisible.value = true
 }
 
-/** 点卡片上的图：直接全屏预览（不经过详情弹层，H5 下弹层与预览层叠加会不上屏） */
+/** 点卡片上的图：打开全屏预览（不经过详情弹层，H5 下弹层与预览层叠加会不上屏） */
+async function openViewer(share) {
+	if (!share || !share.image_url) return
+	const month = (share.share_date || selectedDate.value).slice(0, 7)
+	let list = []
+	try {
+		list = await getMonthShares(month, mode.value)
+	} catch (e) {
+		// 整月取不到就退回只看这一张，至少预览本身还能用
+		list = [share]
+	}
+	if (!list.length) list = [share]
+	viewerItems.value = list
+	viewerIndex.value = Math.max(0, list.findIndex((r) => r.image_url === share.image_url))
+	viewerVisible.value = true
+}
+
 function previewShare(share) {
-	if (!share.image_url) return
-	uni.previewImage({ urls: [share.image_url], current: share.image_url })
+	openViewer(share)
+}
+
+/** 详情弹层里点大图：先关弹层再开预览，两层叠加会互相干扰 */
+function onDetailPreview(share) {
+	closeDetail()
+	openViewer(share)
 }
 
 function closeDetail() {
@@ -371,27 +405,29 @@ loadShares(selectedDate.value)
 function gotoWorkIfAlarmDue() {
 	const due = checkPendingAlarm()
 	if (due) {
-		uni.reLaunch({ url: '/pages/work/index' })
+		uni.switchTab({ url: '/pages/work/index' })
 		return true
 	}
 	return false
 }
 
+// 到点闹钟会把 App 拉到前台触发 onShow 立即检查，这里只是兜底轮询，5 秒一次足够，
+// 避免常驻 1 秒读一次本地存储
+let alarmChecker = null
+
 onShow(() => {
 	gotoWorkIfAlarmDue()
 	// 状态栏文字颜色跟随当前主题（切页/回前台可能被系统重置，回前台补一次）
 	syncStatusBarTheme(mode.value)
+	// 兜底轮询只在可见时跑：tab 页现在切走不销毁，常驻会把隐藏的页面变成能抢跳转的后台
+	if (!alarmChecker) alarmChecker = setInterval(gotoWorkIfAlarmDue, 5000)
 })
 
-let alarmChecker = null
-onMounted(() => {
-	// 到点闹钟会把 App 拉到前台触发 onShow 立即检查，这里只是兜底轮询，5 秒一次足够，
-	// 避免常驻 1 秒读一次本地存储
-	alarmChecker = setInterval(gotoWorkIfAlarmDue, 5000)
-})
-
-onUnmounted(() => {
-	if (alarmChecker) clearInterval(alarmChecker)
+onHide(() => {
+	if (alarmChecker) {
+		clearInterval(alarmChecker)
+		alarmChecker = null
+	}
 })
 </script>
 
