@@ -79,13 +79,19 @@
 				</view>
 			</view>
 
-			<!-- 加载中：只替换当天内容区域，日历保持不动 -->
-			<view class="state-card glassmorphism" v-if="loading">
-				<view class="spinner-wrap">
-					<uni-icons type="spinner-cycle" size="26" color="var(--brand)" />
+			<!-- 加载中：骨架复用真卡片的类与尺寸，替换后视觉不跳（日历保持不动） -->
+			<template v-if="loading">
+				<view class="share-card glassmorphism" v-for="i in 2" :key="'share-sk-' + i">
+					<skeleton-block h="400rpx" r="0" />
+					<view class="sk-cap">
+						<skeleton-block w="62%" h="26rpx" />
+					</view>
+					<view class="share-foot">
+						<skeleton-block w="150rpx" h="32rpx" r="999rpx" />
+						<skeleton-block w="60rpx" h="22rpx" />
+					</view>
 				</view>
-				<text class="state-text">加载中…</text>
-			</view>
+			</template>
 
 			<!-- 请求失败 -->
 			<view class="state-card glassmorphism" v-else-if="loadError">
@@ -700,15 +706,6 @@ onUnmounted(() => {
 		margin-top: 20rpx;
 	}
 
-	.spinner-wrap {
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
-	}
-
 	.retry-btn {
 		margin-top: 28rpx;
 		min-width: 240rpx;
@@ -758,5 +755,10 @@ onUnmounted(() => {
 
 	.share-foot-space {
 		flex: 1;
+	}
+
+	/* 骨架屏的文案行容器：padding 与 .share-caption 保持一致 */
+	.sk-cap {
+		padding: 24rpx 28rpx 0;
 	}
 </style>

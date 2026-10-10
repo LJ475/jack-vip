@@ -34,12 +34,24 @@
 			</view>
 		</view>
 
-		<view class="state-card glassmorphism" v-if="!timers.length">
+		<view class="state-card glassmorphism" v-if="ready && !timers.length">
 			<view class="state-icon">
 				<uni-icons type="notification" size="30" color="var(--text-aux)" />
 			</view>
 			<text class="state-text">还没有倒计时，点上方「新建倒计时」开始</text>
 		</view>
+
+		<!-- 首帧骨架：复用 .timer-card / .timer-info，尺寸与真卡片一致 -->
+		<template v-if="!ready">
+			<view class="timer-card glassmorphism" v-for="i in 2" :key="'timer-sk-' + i">
+				<view class="timer-info">
+					<skeleton-block w="36%" h="28rpx" />
+					<skeleton-block w="58%" h="52rpx" mt="14rpx" />
+					<skeleton-block w="30%" h="22rpx" mt="14rpx" />
+				</view>
+				<skeleton-block w="132rpx" h="56rpx" r="999rpx" />
+			</view>
+		</template>
 
 		<view
 			class="timer-card glassmorphism"
@@ -207,6 +219,8 @@ function formatHMS(totalSec) {
 
 // 页面状态
 const timers = ref([])
+// 列表在 onMounted 里才从本地读，首帧为空：用它驱动骨架，避免先闪「还没有倒计时」空状态
+const ready = ref(false)
 const createVisible = ref(false)
 const selectedTimer = ref(null)
 const statusVisible = ref(false)
@@ -419,6 +433,7 @@ let uiTimer = null
 onMounted(() => {
 	ensureNotifyPermission()
 	timers.value = listTimers()
+	ready.value = true
 	uiTimer = setInterval(() => {
 		nowTs.value = Date.now()
 

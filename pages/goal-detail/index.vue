@@ -1,5 +1,34 @@
 <template>
-	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" :style="goal ? { '--goal-accent': goal.color } : {}" v-if="goal">
+	<!-- 首帧骨架：goal 要到 onShow 才取到，在那之前整页是空白；复用真页面的类保证尺寸一致 -->
+	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" v-if="!goal">
+		<view class="nav">
+			<view class="nav-side" @click="goBack">
+				<uni-icons type="left" size="20" color="var(--text)" />
+			</view>
+			<text class="nav-title">目标详情</text>
+			<view class="nav-side"></view>
+		</view>
+		<view class="overview-card">
+			<view class="ov-main">
+				<skeleton-block w="88rpx" h="88rpx" circle />
+				<view class="ov-info">
+					<skeleton-block w="44%" h="34rpx" />
+					<skeleton-block w="68%" h="24rpx" mt="16rpx" />
+				</view>
+			</view>
+		</view>
+		<view class="progress-card glassmorphism">
+			<view class="progress-top">
+				<skeleton-block w="156rpx" h="156rpx" circle />
+				<view class="progress-nums">
+					<skeleton-block w="70%" h="28rpx" />
+					<skeleton-block w="48%" h="24rpx" mt="18rpx" />
+				</view>
+			</view>
+		</view>
+	</view>
+
+	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" :style="goal ? { '--goal-accent': goal.color } : {}" v-else>
 
 		<!-- ① 顶部导航：返回 + 标题 + 更多 -->
 		<view class="nav">

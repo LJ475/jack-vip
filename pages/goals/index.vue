@@ -39,13 +39,26 @@
 		<view class="section-head">
 			<view class="section-left">
 				<text class="section-title">我的目标</text>
-				<text class="section-count">共 {{ visibleGoals.length }} 个目标</text>
+				<text class="section-count" v-if="ready">共 {{ visibleGoals.length }} 个目标</text>
 			</view>
 			<view class="local-badge">
 				<uni-icons type="phone" size="13" color="var(--text-aux)" />
 				<text class="local-badge-text">本地保存</text>
 			</view>
 		</view>
+
+		<!-- 首帧骨架：复用 .goal-card / .goal-main / .goal-info，尺寸与真卡片一致 -->
+		<template v-if="!ready">
+			<view class="goal-card glassmorphism" v-for="i in 3" :key="'goal-sk-' + i">
+				<view class="goal-main">
+					<skeleton-block w="76rpx" h="76rpx" circle />
+					<view class="goal-info">
+						<skeleton-block w="42%" h="30rpx" />
+						<skeleton-block w="66%" h="24rpx" mt="18rpx" />
+					</view>
+				</view>
+			</view>
+		</template>
 
 		<view
 			class="goal-card glassmorphism"
@@ -200,6 +213,8 @@ const themeMode = ref(getAppMode())
 const isThoughtTheme = computed(() => themeMode.value === CONTENT_MODE.THOUGHT)
 
 const goals = ref([])
+// 本地数据在 onShow 里读，首帧是空的：用这个标记驱动列表骨架，避免闪一下空列表
+const ready = ref(false)
 const startMonthText = ref('2026.08')
 const endDate = ref('2030-12-31')
 const createVisible = ref(false)
@@ -452,6 +467,7 @@ onShow(() => {
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
 	loadGoals()
+	ready.value = true
 	playEnterAnimations()
 })
 </script>

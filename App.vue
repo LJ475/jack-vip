@@ -123,6 +123,9 @@
 		--focus-border: rgba(58, 131, 247, 0.55);
 		--wheel-bg: rgba(255, 255, 255, 0.55);
 		--bubble-bg: rgba(255, 255, 255, 0.94);
+		/* 骨架屏：底色 + 扫光高光 */
+		--sk-base: rgba(23, 33, 58, 0.07);
+		--sk-hi: rgba(255, 255, 255, 0.85);
 		/* 2030 总览卡场景色（浅色=天空蓝渐变） */
 		--overview-bg: linear-gradient(135deg, #D8E8FF 0%, #ECF4FF 55%, #F6FAFF 100%);
 		--overview-border: rgba(255, 255, 255, 0.75);
@@ -180,6 +183,9 @@
 		--focus-border: rgba(169, 123, 30, 0.6);
 		--wheel-bg: rgba(255, 255, 255, 0.04);
 		--bubble-bg: rgba(34, 35, 42, 0.98);
+		/* 骨架屏跟着翻黑，避免暗色下骨架本身成一次闪白 */
+		--sk-base: rgba(255, 255, 255, 0.055);
+		--sk-hi: rgba(232, 179, 65, 0.16);
 		/* 2030 总览卡场景色（黑金=暗色山峦金晖；注意值必须写成单行——多行声明会被 uni 编译器静默丢弃） */
 		--overview-bg: radial-gradient(130% 100% at 88% 0%, rgba(232, 179, 65, 0.3) 0%, rgba(232, 179, 65, 0.07) 42%, transparent 65%), linear-gradient(160deg, #262012 0%, #141419 75%);
 		--overview-border: rgba(232, 179, 65, 0.22);
