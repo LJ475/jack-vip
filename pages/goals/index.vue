@@ -413,7 +413,7 @@ onShow(() => {
 	syncRootTheme(themeMode.value)
 	loadGoals()
 	ready.value = true
-	subscribeClock()
+	subscribeClock('goals')
 	if (barsTimer) clearTimeout(barsTimer)
 	barsIn.value = false
 	barsTimer = setTimeout(() => {
@@ -423,7 +423,7 @@ onShow(() => {
 })
 
 onHide(() => {
-	unsubscribeClock()
+	unsubscribeClock('goals')
 	if (barsTimer) {
 		clearTimeout(barsTimer)
 		barsTimer = null

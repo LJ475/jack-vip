@@ -388,7 +388,7 @@ onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
-	subscribeClock()
+	subscribeClock('work')
 	// tab 页切走不再销毁，秒级轮询跟着显示/隐藏启停：
 	// 停在后台还在轮询闹钟，会在别的页面上抢着响铃、抢着落库
 	if (!uiTimer) uiTimer = setInterval(() => {
@@ -418,7 +418,7 @@ onShow(() => {
 })
 
 onHide(() => {
-	unsubscribeClock()
+	unsubscribeClock('work')
 	if (uiTimer) {
 		clearInterval(uiTimer)
 		uiTimer = null
