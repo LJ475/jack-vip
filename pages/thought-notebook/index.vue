@@ -14,7 +14,7 @@
 			</view>
 		</view>
 
-		<!-- 横线纸：textarea 压在行线上，行高等于线间距，字就坐在格子线上 -->
+		<!-- 横线纸：行线画在纸上，输入框透明且随内容长高，整页跟着滚（光标永远在可见区域里） -->
 		<view class="nb-paper">
 			<textarea
 				class="nb-input"
@@ -22,9 +22,9 @@
 				:maxlength="NOTE_MAX_LEN"
 				placeholder="写下今天的想法……"
 				placeholder-class="nb-ph"
-				:focus="true"
 				:show-confirm-bar="false"
 				:cursor-spacing="24"
+				auto-height
 			/>
 		</view>
 
@@ -102,13 +102,13 @@ onUnload(() => {
 	.notebook {
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
+		min-height: 100vh;
 		box-sizing: border-box;
 		padding: calc(var(--status-bar-height, 0px) + 12rpx) 28rpx calc(env(safe-area-inset-bottom) + 16rpx);
 		/* 亮色：米白纸张 + 浅灰行线 */
 		--nb-page-bg: linear-gradient(135deg, #edf4ff, #f8fbff);
 		--nb-paper: #FFFDF6;
-		--nb-line: rgba(23, 33, 58, 0.13);
+		--nb-line: rgba(23, 33, 58, 0.22);
 		--nb-ink: #333333;
 		--nb-ink-soft: #8994A9;
 		background: var(--nb-page-bg);
@@ -121,7 +121,7 @@ onUnload(() => {
 		/* 暗色：墨黑纸 + 弱金行线 */
 		--nb-page-bg: linear-gradient(180deg, #0C0C11 0%, #0B0B0F 100%);
 		--nb-paper: #101014;
-		--nb-line: rgba(232, 179, 65, 0.13);
+		--nb-line: rgba(232, 179, 65, 0.3);
 		--nb-ink: #E8E8EA;
 		--nb-ink-soft: #85858D;
 	}
@@ -185,26 +185,30 @@ onUnload(() => {
 		flex: 1;
 		position: relative;
 		border-radius: 28rpx;
-		background: var(--nb-paper);
 		border: 1rpx solid var(--nb-line);
 		overflow: hidden;
-	}
-
-	/* 一行一条线：线画在每个 88rpx 行的底部，line-height 与它相等，字就落在线上 */
-	.nb-input {
-		width: 100%;
-		height: 100%;
 		box-sizing: border-box;
-		padding: 10rpx 26rpx 0;
-		background-color: transparent;
+		/* 行线画在纸上：一条线 2rpx 宽、行距 88rpx，从内容区顶部开始排，
+		   和下面 textarea 的 line-height 对齐，字就坐在线上 */
+		background-color: var(--nb-paper);
+		padding: 12rpx 26rpx 24rpx;
 		background-image: repeating-linear-gradient(
 			180deg,
 			transparent 0,
-			transparent 87rpx,
-			var(--nb-line) 87rpx,
+			transparent 86rpx,
+			var(--nb-line) 86rpx,
 			var(--nb-line) 88rpx
 		);
 		background-size: 100% 88rpx;
+		background-origin: content-box;
+		background-clip: padding-box;
+	}
+
+	.nb-input {
+		width: 100%;
+		min-height: 88rpx;
+		padding: 0;
+		background: transparent;
 		line-height: 88rpx;
 		font-size: 34rpx;
 		color: var(--nb-ink);
