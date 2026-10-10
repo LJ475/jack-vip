@@ -236,7 +236,9 @@ function loadGoals() {
 		startMonthText.value = saved.startMonth || '2026.08'
 		endDate.value = saved.endDate || '2030-12-31'
 	}
-	goals.value = DEFAULT_GOALS.map((g) => ({ ...g }))
+	// 默认目标也必须过 normalizeGoal：它们手写时没有 checkins/amounts，
+	// 直接进列表会让卡片读 g.checkins.length 崩掉（新装 App 首进 2030 就是这条路径）
+	goals.value = DEFAULT_GOALS.map((g) => normalizeGoal({ ...g }))
 	persist()
 }
 
