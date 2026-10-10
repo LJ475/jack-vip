@@ -22,6 +22,13 @@
 			}
 		},
 		{
+			"path": "pages/thought-notebook/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
 			"path": "pages/work/index",
 			"style": {
 				"navigationStyle": "custom",

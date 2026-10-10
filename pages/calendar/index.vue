@@ -133,6 +133,7 @@
 			<thought-note-card
 				v-if="isThoughtMode && !loading && !loadError"
 				:date="selectedDate"
+				ref="noteCardRef"
 			/>
 		</view>
 
@@ -368,6 +369,9 @@ function closeDetail() {
 
 const aboutVisible = ref(false)
 
+/** 思考本子页返回后要重读那天的记录 */
+const noteCardRef = ref(null)
+
 function openAbout() {
 	aboutVisible.value = true
 }
@@ -422,6 +426,8 @@ onShow(() => {
 	hideNativeTabBar()
 	// 状态栏文字颜色跟随当前主题（切页/回前台可能被系统重置，回前台补一次）
 	syncStatusBarTheme(mode.value)
+	// 从本子页写完结算回来，重读一遍那天的记录与连续天数
+	if (noteCardRef.value) noteCardRef.value.refresh()
 	// 兜底轮询只在可见时跑：tab 页现在切走不销毁，常驻会把隐藏的页面变成能抢跳转的后台
 	if (!alarmChecker) alarmChecker = setInterval(gotoWorkIfAlarmDue, 5000)
 })

@@ -19,43 +19,20 @@
 
 		<!-- 展开内容 -->
 		<view class="thought-body" v-if="expanded">
-			<!-- 编辑中 -->
-			<view class="thought-edit" v-if="editing">
-				<view class="thought-field glassmorphism glass-input" @click.stop>
-					<textarea
-						class="thought-input"
-						v-model="draft"
-						:maxlength="MAX_LEN"
-						:focus="true"
-						auto-height
-						placeholder="一句话记录今天的想法（200 字以内）"
-						placeholder-class="ph"
-						:show-confirm-bar="false"
-					/>
-				</view>
-				<view class="thought-actions">
-					<text class="thought-count">{{ draft.length }}/{{ MAX_LEN }}</text>
-					<view class="thought-actions-btns">
-						<button class="btn btn-ghost btn-sm" @click="cancelEdit">取消</button>
-						<button class="btn btn-primary btn-sm thought-save-btn" @click="saveNote">保存</button>
-					</view>
-				</view>
-			</view>
-
-			<!-- 已记录：查看 + 修改入口 -->
-			<view class="thought-view" v-else-if="noteText">
+			<!-- 已记录：看全文 + 进本子改 -->
+			<view class="thought-view" v-if="noteText">
 				<text class="thought-text">{{ noteText }}</text>
 				<view class="thought-view-foot">
 					<text class="thought-hint" v-if="noteUpdatedAt">记录于 {{ noteUpdatedAt }}</text>
 					<view class="thought-view-foot-space"></view>
-					<button class="btn btn-ghost btn-sm" @click="startEdit">修改</button>
+					<button class="btn btn-ghost btn-sm" @click="openNotebook">写本子</button>
 				</view>
 			</view>
 
 			<!-- 未记录：引导 -->
 			<view class="thought-view thought-view-empty" v-else>
-				<text class="thought-placeholder">这一天还没有记录，写下一句自己的想法吧</text>
-				<button class="btn btn-primary btn-sm thought-start-btn" @click="startEdit">去记录</button>
+				<text class="thought-placeholder">这一天还没有记录，点开本子写几句自己的想法吧</text>
+				<button class="btn btn-primary btn-sm thought-start-btn" @click="openNotebook">去记录</button>
 			</view>
 		</view>
 	</view>
@@ -63,119 +40,40 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { getNote, calcStreak } from '@/utils/thought-notes.js'
 
 const props = defineProps({
 	/** 记录归属的日期 YYYY-MM-DD */
 	date: { type: String, default: '' }
 })
 
-const STORAGE_KEY = 'thoughtNotes'
-const MAX_LEN = 200
-
-function pad(n) {
-	return String(n).padStart(2, '0')
-}
-
-function dateKey(d) {
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
-
-function loadNotes() {
-	try {
-		const n = uni.getStorageSync(STORAGE_KEY)
-		return (n && typeof n === 'object' && !Array.isArray(n)) ? n : {}
-	} catch (e) {
-		return {}
-	}
-}
-
 const expanded = ref(false)
-const editing = ref(false)
 const noteText = ref('')
 const noteUpdatedAt = ref('')
-const draft = ref('')
 const streak = ref(0)
-
-/** 某天是否有有效记录 */
-function hasNote(notes, d) {
-	const rec = notes[dateKey(d)]
-	return !!(rec && rec.text && String(rec.text).trim())
-}
-
-/** 连续记录天数：从今天往前数；今天还没记不打断连续（从昨天起算） */
-function calcStreak(notes) {
-	const t = new Date()
-	if (!hasNote(notes, t)) t.setDate(t.getDate() - 1)
-	let count = 0
-	while (hasNote(notes, t) && count < 3660) {
-		count++
-		t.setDate(t.getDate() - 1)
-	}
-	return count
-}
 
 /** 切换日期时收起并重读当天的记录 */
 function refresh() {
-	const notes = loadNotes()
-	const rec = notes[props.date]
+	const rec = getNote(props.date)
 	noteText.value = (rec && rec.text) || ''
 	noteUpdatedAt.value = (rec && rec.updatedAt) || ''
-	streak.value = calcStreak(notes)
+	streak.value = calcStreak()
 	expanded.value = false
-	editing.value = false
-	draft.value = ''
 }
 
 watch(() => props.date, refresh, { immediate: true })
 
-/** 点标题行：展开/收起；没记录过的日期展开时直接进入编辑 */
+// 从本子页返回时，日历页 onShow 会调这里把刚写的内容拉回来
+defineExpose({ refresh })
+
+/** 点标题行：展开/收起 */
 function toggleExpand() {
-	if (expanded.value) {
-		expanded.value = false
-		editing.value = false
-		draft.value = ''
-		return
-	}
-	expanded.value = true
-	if (!noteText.value) {
-		draft.value = ''
-		editing.value = true
-	}
+	expanded.value = !expanded.value
 }
 
-function startEdit() {
-	draft.value = noteText.value
-	editing.value = true
-}
-
-function cancelEdit() {
-	editing.value = false
-	draft.value = ''
-	// 没有任何记录时取消：直接收起，避免停在空引导页
-	if (!noteText.value) expanded.value = false
-}
-
-function saveNote() {
-	const text = (draft.value || '').trim()
-	if (!text) {
-		uni.showToast({ title: '先写点什么吧', icon: 'none' })
-		return
-	}
-	try {
-		const notes = loadNotes()
-		const t = new Date()
-		const updatedAt = `${dateKey(t)} ${pad(t.getHours())}:${pad(t.getMinutes())}`
-		notes[props.date] = { text, updatedAt }
-		uni.setStorageSync(STORAGE_KEY, notes)
-		noteUpdatedAt.value = updatedAt
-	} catch (e) {
-		uni.showToast({ title: '保存失败，请重试', icon: 'none' })
-		return
-	}
-	noteText.value = text
-	streak.value = calcStreak(loadNotes())
-	editing.value = false
-	uni.showToast({ title: '已记录', icon: 'success' })
+/** 打开整屏本子页写这条 */
+function openNotebook() {
+	uni.navigateTo({ url: `/pages/thought-notebook/index?date=${encodeURIComponent(props.date)}` })
 }
 </script>
 
@@ -274,50 +172,5 @@ function saveNote() {
 
 	.thought-start-btn {
 		margin-top: 20rpx;
-	}
-
-	/* ===== 编辑 ===== */
-	.thought-edit {
-		padding: 0 28rpx 24rpx;
-	}
-
-	.thought-field {
-		display: flex;
-		width: 100%;
-		padding: 16rpx 20rpx;
-		box-sizing: border-box;
-	}
-
-	.thought-input {
-		flex: 1;
-		width: 100%;
-		min-height: 120rpx;
-		font-size: 26rpx;
-		color: var(--text);
-		line-height: 1.6;
-		background: transparent;
-		border: none;
-		padding: 0;
-	}
-
-	.thought-actions {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-top: 20rpx;
-	}
-
-	.thought-count {
-		font-size: 22rpx;
-		color: var(--text-weak);
-	}
-
-	.thought-actions-btns {
-		display: flex;
-		align-items: center;
-	}
-
-	.thought-save-btn {
-		margin-left: 16rpx;
 	}
 </style>
