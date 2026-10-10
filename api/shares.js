@@ -26,6 +26,7 @@ import { request } from '../utils/request.js'
  * 归属哪天由 created_at 的日期部分推出（库里没有日期列，也没有 id）。
  * 与 contributors.js 同一套网关与钥匙，表权限只给 anon 开「读」。
  * 思考实验走这张表；专属会员分享仍走上面的 COS 清单（清单为空即无内容）。
+ * 取数按「整月一次 + 会话内存缓存」：翻月才发请求，点某天从内存筛。
  */
 const DATA_SOURCE = 'cos'
 
@@ -178,26 +179,51 @@ function cloudShare(raw, index) {
 	}
 }
 
-function fetchShareDatesFromCloud(month) {
+/**
+ * 整月一次拉取 + 会话内存缓存：
+ * 点某天 = 从这份内存数据里筛，不再发请求；只有翻月才请求一次。
+ * 缓存的是 promise，所以同月并发调用（打点 + 内容同时来）也只发一条。
+ * 表里没有 mode 列，两种模式拿到的是同一批行（现在只有思考实验在用）。
+ */
+const CLOUD_MONTH_TTL = 10 * 60 * 1000
+const cloudMonthCache = { month: '', at: 0, promise: null }
+
+function fetchMonthRowsFromCloud(month) {
 	const range = monthRange(month)
 	if (!range) return Promise.resolve([])
-	const url = `${CLOUDBASE_BASE}/v1/rdb/rest/${TABLE}?select=created_at` +
-		`&${createdBetween(range.start, nextDate(range.end))}&order=created_at.asc`
-	return request({ url, header: authHeaders() }).then((rows) => {
-		const list = Array.isArray(rows) ? rows : []
-		return [...new Set(list.map((r) => String(r.created_at || '').slice(0, 10)))]
-			.filter(Boolean)
-			.sort()
-	})
-}
-
-function fetchSharesByDateFromCloud(date) {
 	const url = `${CLOUDBASE_BASE}/v1/rdb/rest/${TABLE}?select=image_url,created_at` +
-		`&${createdBetween(date, nextDate(date))}&order=created_at.asc`
+		`&${createdBetween(range.start, nextDate(range.end))}&order=created_at.asc`
 	return request({ url, header: authHeaders() }).then((rows) => {
 		const list = Array.isArray(rows) ? rows : []
 		return list.map(cloudShare)
 	})
+}
+
+function getCloudMonth(month) {
+	const c = cloudMonthCache
+	if (c.month === month && c.promise && Date.now() - c.at < CLOUD_MONTH_TTL) {
+		return c.promise
+	}
+	c.month = month
+	c.at = Date.now()
+	c.promise = fetchMonthRowsFromCloud(month).catch((e) => {
+		// 失败不留缓存，下次调用重新请求
+		if (cloudMonthCache.promise === c.promise) cloudMonthCache.promise = null
+		throw e
+	})
+	return c.promise
+}
+
+function fetchShareDatesFromCloud(month) {
+	return getCloudMonth(month).then((rows) =>
+		[...new Set(rows.map((r) => r.share_date))].filter(Boolean).sort()
+	)
+}
+
+function fetchSharesByDateFromCloud(date) {
+	return getCloudMonth(date.slice(0, 7)).then((rows) =>
+		rows.filter((r) => r.share_date === date)
+	)
 }
 
 /* ==================== 模拟数据 ==================== */
