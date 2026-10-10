@@ -10,7 +10,16 @@
 
 		<swiper class="viewer-swiper" :current="cur" :indicator-dots="false" @change="onChange">
 			<swiper-item v-for="(it, i) in items" :key="i">
-				<image class="viewer-img" :src="it.image_url" mode="aspectFit" @longpress="save(it)" />
+				<!-- 只挂当前页前后各一张：整月 30 张 1440x2160 全解码会直接把帧率拖死 -->
+				<image
+					v-if="near(i)"
+					class="viewer-img"
+					:src="it.image_url"
+					mode="aspectFit"
+					lazy-load
+					@longpress="save(it)"
+				/>
+				<view v-else class="viewer-ph"></view>
 			</swiper-item>
 		</swiper>
 
@@ -50,6 +59,11 @@ const dateText = computed(() => {
 
 function onChange(e) {
 	cur.value = (e && e.detail && e.detail.current) || 0
+}
+
+/** 只渲染离当前页 1 页以内的图，其余留占位块 */
+function near(i) {
+	return Math.abs(i - cur.value) <= 1
 }
 
 function close() {
@@ -111,6 +125,12 @@ function save(it) {
 	}
 
 	.viewer-img {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 未挂载的页留空占位，保证 swiper 每页宽度一致、滑动距离不跳 */
+	.viewer-ph {
 		width: 100%;
 		height: 100%;
 	}
