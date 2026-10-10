@@ -26,12 +26,27 @@ export function resetAppMode() {
 	} catch (e) { /* 忽略 */ }
 }
 
+function currentRoute() {
+	try {
+		const pages = getCurrentPages()
+		const page = pages[pages.length - 1]
+		return (page && page.route) || ''
+	} catch (e) { return '' }
+}
+
+/** 已补过隐藏/已刷过底色的页面，重复显示时不再跨桥（切页掉帧的排查见下） */
+const hiddenRoutes = new Set()
+const paintedRoutes = new Set()
+
 /** 原生 tabBar 兜底隐藏：只在 App 端需要。
  *  onLaunch 那次不够——那时页面 webview 还没 append 进原生 tabview，hide 被吞，
- *  tabview 一挂上页面又把条画回来（就是「两条底部栏」）。每个 tab 页 onShow 再调一次，
- *  switchTab 后也一定走到这里。H5 端 onLaunch 那次已经把 DOM 那条挡掉了。 */
+ *  tabview 一挂上页面又把条画回来（就是「两条底部栏」）。所以改成在每个 tab 页显示时补一次，
+ *  但每个页面只补第一次：切回来的页面 webview 还缓存着，不会再画。 */
 export function hideNativeTabBar() {
 	// #ifdef APP-PLUS
+	const key = currentRoute()
+	if (!key || hiddenRoutes.has(key)) return
+	hiddenRoutes.add(key)
 	uni.hideTabBar({ animation: false })
 	// #endif
 }
@@ -40,6 +55,7 @@ export function hideNativeTabBar() {
 export function syncStatusBarTheme(mode) {
 	// #ifdef APP-PLUS
 	const thought = mode === CONTENT_MODE.THOUGHT
+	// 状态栏每次进来都补一遍：回前台可能被系统改回去，这一笔是单个原生调用，很便宜
 	try {
 		plus.navigator.setStatusBarStyle(thought ? 'light' : 'dark')
 	} catch (e) { /* 忽略 */ }
@@ -47,6 +63,10 @@ export function syncStatusBarTheme(mode) {
 	// （两个主题共用不了）；暗色下这层还是浅蓝，切页/回前台就闪白。H5 端同类问题靠
 	// html.theme-thought 覆盖 CSS 解决，但 App 的服务层没有 document，那套类挂不上去，只能走原生。
 	// 键名与 uni 自己处理 darkmode 时 setStyle 的那几个保持一致（uni-app-plus 运行时 useWebviewThemeChange）。
+	// 改底色会让原生窗口整块重绘，代价不低，所以同一页面同一主题只刷一次。
+	const key = `${currentRoute()}|${thought ? 'd' : 'l'}`
+	if (paintedRoutes.has(key)) return
+	paintedRoutes.add(key)
 	try {
 		const pages = getCurrentPages()
 		const page = pages[pages.length - 1]
