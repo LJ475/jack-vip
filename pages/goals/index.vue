@@ -47,52 +47,19 @@
 			</view>
 		</view>
 
-		<!-- 首帧骨架：复用 .goal-card / .goal-main / .goal-info，尺寸与真卡片一致 -->
+		<!-- 首帧骨架：走真卡片同一个组件的 loading 形态，外壳与尺寸天然一致 -->
 		<template v-if="!ready">
-			<view class="goal-card glassmorphism" v-for="i in 3" :key="'goal-sk-' + i">
-				<view class="goal-main">
-					<skeleton-block w="76rpx" h="76rpx" circle />
-					<view class="goal-info">
-						<skeleton-block w="42%" h="30rpx" />
-						<skeleton-block w="66%" h="24rpx" mt="18rpx" />
-					</view>
-				</view>
-			</view>
+			<goal-card v-for="i in 3" :key="'goal-sk-' + i" loading />
 		</template>
 
-		<view
-			class="goal-card glassmorphism"
-			v-for="g in visibleGoals"
+		<goal-card
+			v-for="g in shownGoals"
 			:key="g.id"
-			@click="goDetail(g)"
-		>
-			<view class="goal-main">
-				<view class="goal-icon" :style="{ background: g.color + '26' }">
-					<uni-icons :type="g.icon" size="26" :color="g.color" />
-				</view>
-				<view class="goal-info">
-					<view class="goal-name-row">
-						<text class="goal-name">{{ g.title }}</text>
-						<text class="goal-tag" :style="{ color: g.color, background: g.color + '22' }">{{ g.tag }}</text>
-					</view>
-					<text class="goal-desc">{{ g.desc }}</text>
-				</view>
-				<view class="goal-del" @click.stop="askDelete(g)">
-					<uni-icons type="trash" size="18" color="var(--text-weak)" />
-				</view>
-				<uni-icons type="right" size="14" color="var(--text-weak)" />
-			</view>
-			<view class="goal-progress-row">
-				<text class="goal-percent">{{ percentOf(g) }}%</text>
-				<view class="goal-bar-track">
-					<view class="goal-bar-fill" :style="{ width: (barsIn ? percentOf(g) : 0) + '%', background: g.color }"></view>
-				</view>
-			</view>
-			<view class="goal-milestone">
-				<uni-icons type="flag-filled" size="12" :color="g.color" />
-				<text class="milestone-text">已打卡 {{ g.checkins.length }} 天 · 进度 {{ fmtProgress(g.current) }} / {{ g.total }}{{ g.unit ? ' ' + g.unit : '' }}</text>
-			</view>
-		</view>
+			:goal="g"
+			:bars-in="barsIn"
+			@open="goDetail(g)"
+			@remove="askDelete(g)"
+		/>
 
 		<!-- ③ 新建目标 -->
 		<view class="create-goal" @click="onCreate">
@@ -123,7 +90,7 @@
 
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { onShow, onHide } from '@dcloudio/uni-app'
+import { onShow, onHide, onReachBottom } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
 import { nowTs, subscribeClock, unsubscribeClock } from '@/utils/ticker.js'
@@ -286,14 +253,14 @@ function persist() {
 /** 归档目标不在列表展示，但仍保留在本地 */
 const visibleGoals = computed(() => goals.value.filter((g) => g.status !== 'archived'))
 
+/* 列表按批渲染：一次建太多节点会拖慢页面切换（官方性能文档「一次性渲染大量节点」那条）。
+   30 条已经远高过一屏，滚到接近底部再补一批。 */
+const shownCount = ref(30)
+const shownGoals = computed(() => visibleGoals.value.slice(0, shownCount.value))
+
 function percentOf(g) {
 	if (!g.total) return 0
 	return Math.max(0, Math.min(100, Math.round((g.current / g.total) * 100)))
-}
-
-/** 进度展示：保留 1 位小数、去掉多余的 0（step<1 时 current 是小数） */
-function fmtProgress(n) {
-	return String(Math.round(n * 10) / 10)
 }
 
 /** 目标截止时间（当天 23:59:59）——随自定义日期变化 */
@@ -460,6 +427,10 @@ onHide(() => {
 		barsTimer = null
 	}
 })
+
+onReachBottom(() => {
+	if (shownCount.value < visibleGoals.value.length) shownCount.value += 30
+})
 </script>
 
 <style scoped>
@@ -621,119 +592,6 @@ onHide(() => {
 		font-size: 22rpx;
 		color: var(--text-aux);
 		margin-left: 6rpx;
-	}
-
-	/* ===== 目标卡 ===== */
-	.goal-card {
-		padding: 28rpx;
-		margin-bottom: 24rpx;
-	}
-
-	.goal-main {
-		display: flex;
-		flex-direction: row;
-		align-items: flex-start;
-	}
-
-	/* 删除按钮：尺寸与图标取「干正事」卡片上 .timer-del 的同一组值 */
-	.goal-del {
-		width: 56rpx;
-		height: 56rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-right: 4rpx;
-		flex-shrink: 0;
-	}
-
-	.goal-icon {
-		width: 76rpx;
-		height: 76rpx;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-	}
-
-	.goal-info {
-		flex: 1;
-		margin-left: 20rpx;
-		margin-right: 16rpx;
-		min-width: 0;
-	}
-
-	.goal-name-row {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-	}
-
-	.goal-name {
-		font-size: 30rpx;
-		font-weight: 600;
-		color: var(--text);
-	}
-
-	.goal-tag {
-		font-size: 20rpx;
-		line-height: 1;
-		padding: 6rpx 14rpx;
-		border-radius: 999rpx;
-		margin-left: 14rpx;
-		flex-shrink: 0;
-	}
-
-	.goal-desc {
-		display: block;
-		font-size: 24rpx;
-		color: var(--text-aux);
-		margin-top: 8rpx;
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-	}
-
-	.goal-progress-row {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		margin-top: 22rpx;
-	}
-
-	.goal-percent {
-		font-size: 30rpx;
-		font-weight: 700;
-		color: var(--text);
-		width: 100rpx;
-		flex-shrink: 0;
-	}
-
-	.goal-bar-track {
-		flex: 1;
-		height: 14rpx;
-		border-radius: 999rpx;
-		background: rgba(137, 148, 169, 0.2);
-		overflow: hidden;
-	}
-
-	.goal-bar-fill {
-		height: 100%;
-		border-radius: 999rpx;
-		transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	.goal-milestone {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		margin-top: 16rpx;
-	}
-
-	.milestone-text {
-		font-size: 22rpx;
-		color: var(--text-aux);
-		margin-left: 8rpx;
 	}
 
 	/* ===== 新建目标按钮 ===== */

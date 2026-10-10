@@ -115,7 +115,9 @@
 					@click="openDetail(share)"
 				>
 					<view class="share-img-wrap" v-if="share.image_url" @click.stop="previewShare(share)">
-						<image class="share-img" :src="share.image_url" mode="aspectFill" />
+						<!-- lazy-load：一天多张时只解码滚到附近的那几张（原图 2048，整屏一起解码会明显拖住切换）；
+							 预览层里不能加，那边是 swiper 切换瞬间就要图到位 -->
+						<image class="share-img" :src="share.image_url" mode="aspectFill" lazy-load />
 					</view>
 					<text class="share-caption" v-if="share.caption">{{ share.caption }}</text>
 					<view class="share-foot">

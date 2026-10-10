@@ -41,47 +41,19 @@
 			<text class="state-text">还没有倒计时，点上方「新建倒计时」开始</text>
 		</view>
 
-		<!-- 首帧骨架：复用 .timer-card / .timer-info，尺寸与真卡片一致 -->
+		<!-- 首帧骨架：走真卡片同一个组件的 loading 形态，外壳与尺寸天然一致 -->
 		<template v-if="!ready">
-			<view class="timer-card glassmorphism" v-for="i in 2" :key="'timer-sk-' + i">
-				<view class="timer-info">
-					<skeleton-block w="36%" h="28rpx" />
-					<skeleton-block w="58%" h="52rpx" mt="14rpx" />
-					<skeleton-block w="30%" h="22rpx" mt="14rpx" />
-				</view>
-				<skeleton-block w="132rpx" h="56rpx" r="999rpx" />
-			</view>
+			<timer-card v-for="i in 2" :key="'timer-sk-' + i" loading />
 		</template>
 
-		<view
-			class="timer-card glassmorphism"
+		<timer-card
 			v-for="t in timers"
 			:key="t.id"
-			@click="openTimer(t)"
-		>
-			<view class="timer-info">
-				<text class="timer-title">{{ t.title }}</text>
-				<timer-countdown class="timer-duration" :timer="t" />
-				<text class="timer-meta">{{ cardMeta(t) }}</text>
-			</view>
-			<view class="timer-del" @click.stop="removeTimer(t)">
-				<uni-icons type="trash" size="18" color="var(--text-weak)" />
-			</view>
-			<view class="timer-action">
-				<button
-					v-if="t.status === 'idle'"
-					class="btn btn-primary btn-sm"
-					@click.stop="startTimer(t)"
-				>开始</button>
-				<button
-					v-else-if="t.status === 'failed'"
-					class="btn btn-danger-plain btn-sm"
-					@click.stop="startTimer(t)"
-				>重新启动</button>
-				<view v-else-if="t.status === 'running'" class="tag tag-primary">进行中</view>
-				<view v-else class="tag tag-success">已完成</view>
-			</view>
-		</view>
+			:timer="t"
+			@open="openTimer(t)"
+			@remove="removeTimer(t)"
+			@start="startTimer(t)"
+		/>
 
 		<!-- 状态 / 完成 弹层（当前页面内） -->
 		<view v-if="statusVisible && selectedTimer">
@@ -348,16 +320,6 @@ function remainingOf(t) {
 	return (t.startedAt || 0) + t.durationSeconds * 1000 - nowTs.value
 }
 
-function cardMeta(t) {
-	switch (t.status) {
-		case TIMER_STATUS.IDLE: return '系统闹钟 · 未启动'
-		case TIMER_STATUS.RUNNING: return '系统闹钟 · 已设'
-		case TIMER_STATUS.COMPLETED: return '系统闹钟 · 已完成'
-		case TIMER_STATUS.FAILED: return '系统闹钟 · 启动失败'
-		default: return ''
-	}
-}
-
 /* ==================== 响铃（循环铃声 + 循环震动） ==================== */
 
 let audioCtx = null
@@ -610,54 +572,6 @@ onUnmounted(() => {
 		font-size: 26rpx;
 		color: var(--text-aux);
 		margin-top: 24rpx;
-	}
-
-	.timer-card {
-		display: flex;
-		align-items: center;
-		padding: 32rpx 28rpx;
-		margin-bottom: 24rpx;
-	}
-
-	.timer-info {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		margin-right: 20rpx;
-	}
-
-	.timer-title {
-		font-size: 30rpx;
-		font-weight: 600;
-		color: var(--text);
-	}
-
-	.timer-duration {
-		font-size: 44rpx;
-		font-weight: 700;
-		color: var(--brand);
-		margin-top: 12rpx;
-		letter-spacing: 1rpx;
-	}
-
-	.timer-meta {
-		font-size: 22rpx;
-		color: var(--text-aux);
-		margin-top: 10rpx;
-	}
-
-	.timer-action {
-		flex-shrink: 0;
-	}
-
-	.timer-del {
-		width: 56rpx;
-		height: 56rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-right: 12rpx;
-		flex-shrink: 0;
 	}
 
 	/* ===== 状态 / 完成 弹层 ===== */
