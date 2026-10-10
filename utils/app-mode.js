@@ -26,11 +26,30 @@ export function resetAppMode() {
 	} catch (e) { /* 忽略 */ }
 }
 
-/** 状态栏文字颜色跟随主题（黑主题用浅色文字）；仅 App 端生效 */
+/** 状态栏文字颜色 + 页面窗口层底色跟随主题；仅 App 端生效 */
 export function syncStatusBarTheme(mode) {
 	// #ifdef APP-PLUS
+	const thought = mode === CONTENT_MODE.THOUGHT
 	try {
-		plus.navigator.setStatusBarStyle(mode === CONTENT_MODE.THOUGHT ? 'light' : 'dark')
+		plus.navigator.setStatusBarStyle(thought ? 'light' : 'dark')
+	} catch (e) { /* 忽略 */ }
+	// App 端最先画的是页面 webview 的原生窗口底色，它只认 pages.json 里那个静态 backgroundColor
+	// （两个主题共用不了）；暗色下这层还是浅蓝，切页/回前台就闪白。H5 端同类问题靠
+	// html.theme-thought 覆盖 CSS 解决，但 App 的服务层没有 document，那套类挂不上去，只能走原生。
+	// 键名与 uni 自己处理 darkmode 时 setStyle 的那几个保持一致（uni-app-plus 运行时 useWebviewThemeChange）。
+	try {
+		const pages = getCurrentPages()
+		const page = pages[pages.length - 1]
+		const wv = page && page.$getAppWebview && page.$getAppWebview()
+		if (wv) {
+			const bg = thought ? '#0B0B0F' : '#EDF4FF'
+			wv.setStyle({
+				background: bg,
+				backgroundColorTop: bg,
+				backgroundColorBottom: bg,
+				animationAlphaBGColor: bg
+			})
+		}
 	} catch (e) { /* 忽略 */ }
 	// #endif
 }
