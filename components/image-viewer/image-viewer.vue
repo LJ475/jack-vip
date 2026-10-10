@@ -8,15 +8,14 @@
 			</view>
 		</view>
 
-		<swiper class="viewer-swiper" :current="cur" :indicator-dots="false" @change="onChange">
+		<swiper class="viewer-swiper" :current="cur" :indicator-dots="false" @change="onChange" @animationfinish="onFinished">
 			<swiper-item v-for="(it, i) in items" :key="i">
-				<!-- 只挂当前页前后各一张：整月 30 张 1440x2160 全解码会直接把帧率拖死 -->
+				<!-- 挂载窗口只在滑动动画结束后才挪：动画期间增删 DOM + 解码就是掉帧的来源 -->
 				<image
 					v-if="near(i)"
 					class="viewer-img"
 					:src="it.image_url"
 					mode="aspectFit"
-					lazy-load
 					@longpress="save(it)"
 				/>
 				<view v-else class="viewer-ph"></view>
@@ -40,7 +39,9 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const cur = ref(0)
-watch(() => props.index, (v) => { cur.value = v || 0 })
+// 挂载窗口的中心：跟 cur 分开，只在滑动动画结束时才挪，动画期间不动 DOM
+const shown = ref(0)
+watch(() => props.index, (v) => { cur.value = v || 0; shown.value = v || 0 })
 
 const current = computed(() => props.items[cur.value] || null)
 
@@ -61,9 +62,13 @@ function onChange(e) {
 	cur.value = (e && e.detail && e.detail.current) || 0
 }
 
-/** 只渲染离当前页 1 页以内的图，其余留占位块 */
+function onFinished(e) {
+	shown.value = (e && e.detail && e.detail.current) || 0
+}
+
+/** 只渲染离挂载窗口中心 1 页以内的图，其余留占位块 */
 function near(i) {
-	return Math.abs(i - cur.value) <= 1
+	return Math.abs(i - shown.value) <= 1
 }
 
 function close() {
