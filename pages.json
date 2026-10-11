@@ -43,6 +43,13 @@
 			}
 		},
 		{
+			"path": "pages/about/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
 			"path": "pages/work/index",
 			"style": {
 				"navigationStyle": "custom",

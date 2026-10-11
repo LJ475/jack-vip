@@ -82,7 +82,7 @@
 				<text class="mp-row-title">帮助与反馈</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
-			<view class="mp-row" @click="aboutVisible = true">
+			<view class="mp-row" @click="openAbout">
 				<uni-icons type="info-filled" size="18" color="var(--text-secondary)" />
 				<text class="mp-row-title">关于我</text>
 				<text class="mp-row-extra">抖音二维码</text>
@@ -92,9 +92,6 @@
 
 		<!-- 备份与恢复弹层 -->
 		<data-backup-sheet :visible="backupVisible" @close="backupVisible = false" />
-
-		<!-- 关于我（抖音二维码 + 感谢名单，从首页挪过来的） -->
-		<about-me-sheet :visible="aboutVisible" @close="aboutVisible = false" />
 
 		<!-- 底部导航（我的为第二项） -->
 		<app-tab-bar :current="1" />
@@ -114,7 +111,6 @@ const themeMode = ref(getAppMode())
 const isThoughtTheme = computed(() => themeMode.value === CONTENT_MODE.THOUGHT)
 
 const backupVisible = ref(false)
-const aboutVisible = ref(false)
 const deviceNo = ref('')
 const counted = ref({ checkins: 0, streak: 0, notes: 0, done: 0 })
 
@@ -168,6 +164,11 @@ function goWork() {
 
 function openArchive() {
 	uni.navigateTo({ url: '/pages/thought-archive/index' })
+}
+
+/** 关于我：整页（原来是个底部弹层，他要求改成跳页） */
+function openAbout() {
+	uni.navigateTo({ url: '/pages/about/index' })
 }
 
 /** 字体大小：三档，选完立即生效（只影响正文与说明，标题/按钮不动） */
