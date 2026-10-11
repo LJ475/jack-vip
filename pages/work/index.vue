@@ -1,11 +1,12 @@
 <template>
 	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
 
-		<!-- 二级页顶行：只留一个返回箭头（不写标题，免得跟「我的」里的入口名重复） -->
-		<view class="back-row">
-			<view class="back-btn" @click="goBack">
-				<uni-icons type="left" size="20" color="var(--text)" />
+		<!-- 二级页头部：返回箭头 + 页面标题（左对齐） -->
+		<view class="sub-nav">
+			<view class="sub-nav-btn" @click="goBack">
+				<uni-icons type="left" size="22" color="var(--text)" />
 			</view>
+			<text class="sub-nav-title">干正事</text>
 		</view>
 
 		<!-- 主要操作：新建倒计时（sheen：黑金主题下带周期扫光） -->
@@ -433,19 +434,28 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-	/* 二级页顶行：只一个返回箭头，高度与内容起点留出呼吸位 */
-	.back-row {
+	/* 二级页头部：返回箭头 + 标题左对齐 */
+	.sub-nav {
 		display: flex;
 		align-items: center;
-		margin-bottom: 8rpx;
+		margin-bottom: 20rpx;
 	}
 
-	.back-btn {
+	.sub-nav-btn {
 		width: 60rpx;
 		height: 60rpx;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		margin-left: -14rpx;
+		flex-shrink: 0;
+	}
+
+	.sub-nav-title {
+		font-size: 40rpx;
+		font-weight: 700;
+		color: var(--text);
+		margin-left: 6rpx;
 	}
 
 	/* ===== 新建倒计时入口卡 ===== */

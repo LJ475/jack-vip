@@ -1,13 +1,12 @@
 <template>
 	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
 
-		<!-- 从「我的」进来，顶部给一个返回 -->
+		<!-- 二级页头部：返回箭头 + 页面标题（左对齐） -->
 		<view class="sub-nav">
 			<view class="sub-nav-btn" @click="goBack">
-				<uni-icons type="left" size="20" color="var(--text)" />
+				<uni-icons type="left" size="22" color="var(--text)" />
 			</view>
 			<text class="sub-nav-title">2030 目标</text>
-			<view class="sub-nav-btn"></view>
 		</view>
 
 		<!-- ① 目标进度总览卡（截止日期可自定义：点时间范围行修改） -->
@@ -453,11 +452,11 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
-	/* 二级页顶部：返回 + 标题（与目标详情的导航行同款尺寸） */
+	/* 二级页头部：返回箭头 + 标题左对齐 */
 	.sub-nav {
 		display: flex;
 		align-items: center;
-		margin-bottom: 16rpx;
+		margin-bottom: 20rpx;
 	}
 
 	.sub-nav-btn {
@@ -466,14 +465,15 @@ onReachBottom(() => {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		margin-left: -14rpx;
+		flex-shrink: 0;
 	}
 
 	.sub-nav-title {
-		flex: 1;
-		text-align: center;
-		font-size: 32rpx;
-		font-weight: 600;
+		font-size: 40rpx;
+		font-weight: 700;
 		color: var(--text);
+		margin-left: 6rpx;
 	}
 
 	/* ===== 2030 进度总览卡（整页唯一强视觉大卡） ===== */
