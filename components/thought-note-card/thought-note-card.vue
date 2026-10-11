@@ -37,6 +37,7 @@
 				<view class="thought-view-foot">
 					<text class="thought-hint">共 {{ notes.length }} 篇</text>
 					<view class="thought-view-foot-space"></view>
+					<button class="btn btn-ghost btn-sm thought-archive-btn" @click="openArchive">往期</button>
 					<button class="btn btn-ghost btn-sm" @click="openNotebook()">再写一篇</button>
 				</view>
 			</view>
@@ -45,6 +46,7 @@
 			<view class="thought-view thought-view-empty" v-else>
 				<text class="thought-placeholder">这一天还没有记录，点开本子写几句自己的想法吧</text>
 				<button class="btn btn-primary btn-sm thought-start-btn" @click="openNotebook()">去记录</button>
+				<text class="thought-archive-link" @click="openArchive">看看往期</text>
 			</view>
 		</view>
 	</view>
@@ -96,6 +98,11 @@ function timeOf(updatedAt) {
 function openNotebook(id) {
 	const q = `date=${encodeURIComponent(props.date)}` + (id ? `&id=${encodeURIComponent(id)}` : '')
 	uni.navigateTo({ url: `/pages/thought-notebook/index?${q}` })
+}
+
+/** 往期回顾：按月看所有写过的东西 */
+function openArchive() {
+	uni.navigateTo({ url: '/pages/thought-archive/index' })
 }
 </script>
 
@@ -221,5 +228,15 @@ function openNotebook(id) {
 
 	.thought-start-btn {
 		margin-top: 20rpx;
+	}
+
+	.thought-archive-btn {
+		margin-right: 16rpx;
+	}
+
+	.thought-archive-link {
+		font-size: 22rpx;
+		color: var(--text-aux);
+		margin-top: 18rpx;
 	}
 </style>

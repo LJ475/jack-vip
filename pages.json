@@ -29,6 +29,13 @@
 			}
 		},
 		{
+			"path": "pages/thought-archive/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
 			"path": "pages/work/index",
 			"style": {
 				"navigationStyle": "custom",

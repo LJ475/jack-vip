@@ -80,6 +80,21 @@ export function getNotes(date) {
 	return notes[date] || []
 }
 
+/** 全部文章，按日期新→旧、同一天内后写的在前（往期回顾页用） */
+export function getAllNotes() {
+	const { notes, migrated } = readAll()
+	if (migrated) writeAll(notes)
+	const out = []
+	Object.keys(notes).forEach((date) => {
+		(notes[date] || []).forEach((n) => out.push({ date, ...n }))
+	})
+	out.sort((a, b) => {
+		if (a.date !== b.date) return a.date < b.date ? 1 : -1
+		return String(b.updatedAt).localeCompare(String(a.updatedAt))
+	})
+	return out
+}
+
 export function getNoteById(date, id) {
 	return getNotes(date).find((n) => n.id === id) || null
 }

@@ -132,6 +132,9 @@
 			</button>
 		</view>
 
+		<!-- ④b 打卡热力图：一眼看坚持的分布（数据就是上面的 checkins，不多存东西） -->
+		<checkin-heatmap :checkins="goal.checkins" :color="goal.color" />
+
 		<!-- ⑤ 里程碑计划 -->
 		<view class="ms-card glassmorphism">
 			<view class="card-head-row">

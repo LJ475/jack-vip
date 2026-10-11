@@ -70,11 +70,14 @@
 			<view class="create-goal-space"></view>
 			<uni-icons type="right" size="14" color="var(--brand)" />
 		</view>
-		<view class="local-tip">
+		<view class="local-tip" @click="backupVisible = true">
 			<uni-icons type="phone" size="12" color="var(--text-weak)" />
 			<text class="local-tip-text">本地保存 · 仅在本机设备中保存</text>
-			<uni-icons type="checkmarkempty" size="12" color="var(--text-weak)" />
+			<uni-icons type="right" size="12" color="var(--text-weak)" />
 		</view>
+
+		<!-- 备份与恢复（导出/导入本机数据） -->
+		<data-backup-sheet :visible="backupVisible" @close="backupVisible = false" />
 
 		<!-- 新建目标弹层 -->
 		<goal-create-sheet
@@ -186,6 +189,8 @@ const ready = ref(false)
 const startMonthText = ref('2026.08')
 const endDate = ref('2030-12-31')
 const createVisible = ref(false)
+/** 备份与恢复弹层（底部「本地保存」那行点开） */
+const backupVisible = ref(false)
 
 /** 官方 picker 的可选下限：起始月份 1 号（选到起始日之前倒计时会变成 0） */
 const rangeMinDate = computed(() => `${(startMonthText.value || '2026.08').replace('.', '-')}-01`)
