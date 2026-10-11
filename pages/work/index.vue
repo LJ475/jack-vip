@@ -1,6 +1,13 @@
 <template>
 	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
 
+		<!-- 二级页顶行：只留一个返回箭头（不写标题，免得跟「我的」里的入口名重复） -->
+		<view class="back-row">
+			<view class="back-btn" @click="goBack">
+				<uni-icons type="left" size="20" color="var(--text)" />
+			</view>
+		</view>
+
 		<!-- 主要操作：新建倒计时（sheen：黑金主题下带周期扫光） -->
 		<view class="create-entry glassmorphism sheen" @click="openCreate">
 			<view class="create-icon">
@@ -181,6 +188,13 @@ function persist() {
 
 function openCreate() {
 	createVisible.value = true
+}
+
+/** 二级页返回：正常是返回「我的」，被直接打开时兜底回到「我的」 */
+function goBack() {
+	const pages = getCurrentPages()
+	if (pages.length > 1) uni.navigateBack()
+	else uni.switchTab({ url: '/pages/mine/index' })
 }
 
 /** 创建后：保存本地任务并设置原生闹钟 */
@@ -418,7 +432,23 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>	/* ===== 新建倒计时入口卡 ===== */
+<style scoped>
+	/* 二级页顶行：只一个返回箭头，高度与内容起点留出呼吸位 */
+	.back-row {
+		display: flex;
+		align-items: center;
+		margin-bottom: 8rpx;
+	}
+
+	.back-btn {
+		width: 60rpx;
+		height: 60rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* ===== 新建倒计时入口卡 ===== */
 	.create-entry {
 		display: flex;
 		align-items: center;
