@@ -34,21 +34,18 @@ function currentRoute() {
 	} catch (e) { return '' }
 }
 
-/** 已补过隐藏/已刷过底色的页面，重复显示时不再跨桥（切页掉帧的排查见下） */
-const hiddenRoutes = new Set()
+/** 已刷过底色的「页面+主题」，重复显示时不再跨桥（改底色会让原生窗口整块重绘） */
 const paintedRoutes = new Set()
 
-/** 原生 tabBar 兜底隐藏：只在 App 端需要。
- *  onLaunch 那次不够——那时页面 webview 还没 append 进原生 tabview，hide 被吞，
- *  tabview 一挂上页面又把条画回来（就是「两条底部栏」）。所以改成在每个 tab 页显示时补一次，
- *  但每个页面只补第一次：切回来的页面 webview 还缓存着，不会再画。 */
+/** 原生 tabBar 兜底隐藏（App 的原生条 / H5 的 DOM 条都要）。
+ *  onLaunch 那次两边都不够：App 上那时页面 webview 还没 append 进原生 tabview，hide 被吞，
+ *  tabview 一挂上页面又把条画回来；H5 上 onLaunch 时还没有当前页，hideTabBar 直接被
+ *  reject('not TabBar page')，压根没生效。
+ *  **必须每次进 tab 页都补调**（那时 isTabBarPage 为真，两端的调用都被接受）：
+ *  试过用 Set 记忆"这页补过了"来省调用，结果新增页面/路由重新注册时条又被画出来，
+ *  记忆说已经藏过就不再补 —— 条又冒出来了。藏一次就一次调用，比漏掉便宜得多。 */
 export function hideNativeTabBar() {
-	// #ifdef APP-PLUS
-	const key = currentRoute()
-	if (!key || hiddenRoutes.has(key)) return
-	hiddenRoutes.add(key)
 	uni.hideTabBar({ animation: false })
-	// #endif
 }
 
 /** 状态栏文字颜色 + 页面窗口层底色跟随主题；仅 App 端生效 */
