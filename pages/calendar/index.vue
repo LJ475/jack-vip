@@ -411,7 +411,8 @@ loadShares(selectedDate.value)
 function gotoWorkIfAlarmDue() {
 	const due = checkPendingAlarm()
 	if (due) {
-		uni.switchTab({ url: '/pages/work/index' })
+		// 「干正事」现在是「我的」下面的二级页，不再是 tab 页，所以用 navigateTo
+		uni.navigateTo({ url: '/pages/work/index' })
 		return true
 	}
 	return false

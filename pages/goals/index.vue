@@ -1,5 +1,14 @@
 <template>
-	<view class="page page-tabbar" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
+
+		<!-- 从「我的」进来，顶部给一个返回 -->
+		<view class="sub-nav">
+			<view class="sub-nav-btn" @click="goBack">
+				<uni-icons type="left" size="20" color="var(--text)" />
+			</view>
+			<text class="sub-nav-title">2030 目标</text>
+			<view class="sub-nav-btn"></view>
+		</view>
 
 		<!-- ① 目标进度总览卡（截止日期可自定义：点时间范围行修改） -->
 		<view class="overview-card">
@@ -85,9 +94,6 @@
 			@close="createVisible = false"
 			@confirm="onGoalCreate"
 		/>
-
-		<!-- 底部导航（2030 为中间主入口） -->
-		<app-tab-bar :current="1" />
 	</view>
 </template>
 
@@ -95,7 +101,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { onShow, onHide, onReachBottom } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
-import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
+import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 import { nowTs, subscribeClock, unsubscribeClock } from '@/utils/ticker.js'
 
 // 本页数据全部本地存储；首次进入用默认目标播种，之后以本机数据为准
@@ -395,6 +401,13 @@ function goDetail(g) {
 	uni.navigateTo({ url: `/pages/goal-detail/index?id=${encodeURIComponent(g.id)}` })
 }
 
+/** 二级页返回：正常是返回「我的」，被直接打开时兜底回到「我的」 */
+function goBack() {
+	const pages = getCurrentPages()
+	if (pages.length > 1) uni.navigateBack()
+	else uni.switchTab({ url: '/pages/mine/index' })
+}
+
 /** 列表页直接删：确认文案与目标详情页的删除保持一致 */
 function askDelete(g) {
 	uni.showModal({
@@ -412,7 +425,6 @@ function askDelete(g) {
 }
 
 onShow(() => {
-	hideNativeTabBar()
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
@@ -441,6 +453,29 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
+	/* 二级页顶部：返回 + 标题（与目标详情的导航行同款尺寸） */
+	.sub-nav {
+		display: flex;
+		align-items: center;
+		margin-bottom: 16rpx;
+	}
+
+	.sub-nav-btn {
+		width: 60rpx;
+		height: 60rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.sub-nav-title {
+		flex: 1;
+		text-align: center;
+		font-size: 32rpx;
+		font-weight: 600;
+		color: var(--text);
+	}
+
 	/* ===== 2030 进度总览卡（整页唯一强视觉大卡） ===== */
 	.overview-card {
 		background: var(--overview-bg);

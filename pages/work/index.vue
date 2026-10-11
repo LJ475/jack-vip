@@ -1,5 +1,14 @@
 <template>
-	<view class="page page-tabbar" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
+
+		<!-- 从「我的」进来，顶部给一个返回 -->
+		<view class="sub-nav">
+			<view class="sub-nav-btn" @click="goBack">
+				<uni-icons type="left" size="20" color="var(--text)" />
+			</view>
+			<text class="sub-nav-title">干正事</text>
+			<view class="sub-nav-btn"></view>
+		</view>
 
 		<!-- 页面标题（Hero） -->
 		<view class="hero">
@@ -142,9 +151,6 @@
 				</view>
 			</view>
 		</view>
-
-		<!-- 底部导航（干正事为第三项） -->
-		<app-tab-bar :current="2" />
 	</view>
 </template>
 
@@ -152,7 +158,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
-import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
+import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 import {
 	listTimers,
 	saveTimers,
@@ -193,6 +199,13 @@ function persist() {
 
 function openCreate() {
 	createVisible.value = true
+}
+
+/** 二级页返回：正常是返回「我的」，被直接打开时兜底回到「我的」 */
+function goBack() {
+	const pages = getCurrentPages()
+	if (pages.length > 1) uni.navigateBack()
+	else uni.switchTab({ url: '/pages/mine/index' })
 }
 
 /** 创建后：保存本地任务并设置原生闹钟 */
@@ -383,7 +396,6 @@ onMounted(() => {
 onShow(() => {
 	const due = checkPendingAlarm()
 	if (due) handleAlarmDue(due)
-	hideNativeTabBar()
 	// 主题跟随全局模式 + 状态栏文字颜色同步
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
@@ -432,6 +444,28 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+	/* 二级页顶部：返回 + 标题（与目标详情的导航行同款尺寸） */
+	.sub-nav {
+		display: flex;
+		align-items: center;
+		margin-bottom: 16rpx;
+	}
+
+	.sub-nav-btn {
+		width: 60rpx;
+		height: 60rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.sub-nav-title {
+		flex: 1;
+		text-align: center;
+		font-size: 32rpx;
+		font-weight: 600;
+		color: var(--text);
+	}
 	/* ===== Hero（与日历页同款头部模式） ===== */
 	.hero {
 		background: var(--hero-bg);

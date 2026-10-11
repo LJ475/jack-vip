@@ -40,8 +40,7 @@ export default {
 			},
 			tabs: [
 				{ icon: 'calendar', iconActive: 'calendar-filled', text: '分享', path: '/pages/calendar/index' },
-				{ icon: 'star', iconActive: 'star-filled', text: '2030', path: '/pages/goals/index' },
-				{ icon: 'notification', iconActive: 'notification-filled', text: '干正事', path: '/pages/work/index' }
+				{ icon: 'person', iconActive: 'person-filled', text: '我的', path: '/pages/mine/index' }
 			]
 		}
 	},

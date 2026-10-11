@@ -36,6 +36,13 @@
 			}
 		},
 		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
 			"path": "pages/work/index",
 			"style": {
 				"navigationStyle": "custom",
@@ -54,12 +61,8 @@
 				"text": "分享"
 			},
 			{
-				"pagePath": "pages/goals/index",
-				"text": "2030"
-			},
-			{
-				"pagePath": "pages/work/index",
-				"text": "干正事"
+				"pagePath": "pages/mine/index",
+				"text": "我的"
 			}
 		]
 	},
