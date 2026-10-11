@@ -1,7 +1,10 @@
 <template>
 	<view class="about-page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
-		<!-- 顶部：统一导航组件（中间放分段胶囊） -->
-		<app-nav-bar class="ab-nav">
+		<!-- 顶部：统一导航（跟 2030/干正事 同一套） -->
+		<app-nav-bar title="关于我" />
+
+		<!-- 分段胶囊：从导航行移到内容区第一行，导航才能跟其它页一致 -->
+		<view class="ab-seg-wrap">
 			<view class="ab-seg">
 				<view class="ab-seg-item" :class="{ active: tab === 'me' }" @click="switchTab('me')">
 					<text class="ab-seg-text">关于我</text>
@@ -10,7 +13,7 @@
 					<text class="ab-seg-text">支持记录</text>
 				</view>
 			</view>
-		</app-nav-bar>
+		</view>
 
 		<!-- ===== 关于我 ===== -->
 		<template v-if="tab === 'me'">
@@ -245,14 +248,16 @@ onShow(() => {
 
 
 
+	.ab-seg-wrap {
+		margin-bottom: 26rpx;
+	}
+
 	.ab-seg {
-		flex: 1;
 		display: flex;
 		flex-direction: row;
 		background: var(--ab-soft);
 		border-radius: 999rpx;
 		padding: 6rpx;
-		margin-left: 8rpx;
 	}
 
 	.ab-seg-item {
