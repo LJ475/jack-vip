@@ -1,24 +1,6 @@
 <template>
 	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
 
-		<!-- 从「我的」进来，顶部给一个返回 -->
-		<view class="sub-nav">
-			<view class="sub-nav-btn" @click="goBack">
-				<uni-icons type="left" size="20" color="var(--text)" />
-			</view>
-			<text class="sub-nav-title">干正事</text>
-			<view class="sub-nav-btn"></view>
-		</view>
-
-		<!-- 页面标题（Hero） -->
-		<view class="hero">
-			<image class="hero-logo" src="/static/logo.png" mode="aspectFill" />
-			<view class="hero-text">
-				<text class="hero-title">干正事</text>
-				<text class="hero-sub">设置一个倒计时，然后去做<text class="brand-word">真正重要</text>的事情</text>
-			</view>
-		</view>
-
 		<!-- 主要操作：新建倒计时（sheen：黑金主题下带周期扫光） -->
 		<view class="create-entry glassmorphism sheen" @click="openCreate">
 			<view class="create-icon">
@@ -199,13 +181,6 @@ function persist() {
 
 function openCreate() {
 	createVisible.value = true
-}
-
-/** 二级页返回：正常是返回「我的」，被直接打开时兜底回到「我的」 */
-function goBack() {
-	const pages = getCurrentPages()
-	if (pages.length > 1) uni.navigateBack()
-	else uni.switchTab({ url: '/pages/mine/index' })
 }
 
 /** 创建后：保存本地任务并设置原生闹钟 */
@@ -443,76 +418,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-	/* 二级页顶部：返回 + 标题（与目标详情的导航行同款尺寸） */
-	.sub-nav {
-		display: flex;
-		align-items: center;
-		margin-bottom: 16rpx;
-	}
-
-	.sub-nav-btn {
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.sub-nav-title {
-		flex: 1;
-		text-align: center;
-		font-size: 32rpx;
-		font-weight: 600;
-		color: var(--text);
-	}
-	/* ===== Hero（与日历页同款头部模式） ===== */
-	.hero {
-		background: var(--hero-bg);
-		border: 1rpx solid var(--hero-border);
-		border-radius: var(--radius-xl);
-		padding: 44rpx 32rpx;
-		margin-bottom: 28rpx;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-	}
-
-	.hero-logo {
-		width: 112rpx;
-		height: 112rpx;
-		border-radius: 28rpx;
-		border: 1rpx solid rgba(255, 255, 255, 0.8);
-		box-shadow: 0 8rpx 24rpx var(--brand-glow-soft);
-		flex-shrink: 0;
-	}
-
-	.hero-text {
-		display: flex;
-		flex-direction: column;
-		margin-left: 24rpx;
-	}
-
-	.hero-title {
-		font-size: 40rpx;
-		font-weight: 700;
-		color: var(--text);
-		letter-spacing: 2rpx;
-	}
-
-	.hero-sub {
-		font-size: 24rpx;
-		color: var(--text-aux);
-		margin-top: 10rpx;
-		line-height: 1.5;
-	}
-
-	.brand-word {
-		color: var(--brand);
-		font-weight: 700;
-	}
-
-	/* ===== 新建倒计时入口卡 ===== */
+<style scoped>	/* ===== 新建倒计时入口卡 ===== */
 	.create-entry {
 		display: flex;
 		align-items: center;
