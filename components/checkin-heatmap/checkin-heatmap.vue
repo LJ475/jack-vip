@@ -4,6 +4,9 @@
 			<text class="hm-title">打卡记录</text>
 			<text class="hm-sub">{{ weeksText }} · 共 {{ checkins.length }} 天</text>
 		</view>
+		<view class="hm-months">
+			<text class="hm-month" v-for="(m, i) in monthTicks" :key="i">{{ m }}</text>
+		</view>
 		<view class="hm-grid">
 			<view class="hm-col" v-for="(col, ci) in columns" :key="ci">
 				<view
@@ -15,7 +18,7 @@
 			</view>
 		</view>
 		<view class="hm-legend">
-			<text class="hm-legend-text">越深＝那天打了卡</text>
+			<text class="hm-legend-text">一列一周 · 一行一天 · 有颜色的就是那天打了卡</text>
 			<view class="hm-legend-dots">
 				<view class="hm-dot hm-dot--off"></view>
 				<view class="hm-dot" :style="{ background: color }"></view>
@@ -45,26 +48,49 @@ function keyOf(d) {
 
 const weeksText = computed(() => (props.weeks >= 52 ? '近一年' : `近 ${props.weeks} 周`))
 
+/** 每列那一周的周一（末列 = 本周），列与月份标尺共用同一串日期 */
+const columnStarts = computed(() => {
+	const today = new Date()
+	today.setHours(0, 0, 0, 0)
+	const monday = new Date(today)
+	const dow = (today.getDay() + 6) % 7
+	monday.setDate(monday.getDate() - dow)
+	const starts = []
+	for (let w = props.weeks - 1; w >= 0; w--) {
+		const d = new Date(monday)
+		d.setDate(monday.getDate() - w * 7)
+		starts.push(d)
+	}
+	return starts
+})
+
+/** 月份标尺：月份变化的那一列写「N月」，其余列留空（列宽相同所以能对上格子） */
+const monthTicks = computed(() => {
+	let last = -1
+	return columnStarts.value.map((d) => {
+		const m = d.getMonth()
+		if (m === last) return ''
+		last = m
+		return `${m + 1}月`
+	})
+})
+
 /** 末列 = 本周；每列从周一开始，7 行 */
 const columns = computed(() => {
 	const set = new Set(props.checkins || [])
 	const today = new Date()
 	today.setHours(0, 0, 0, 0)
-	// 找到本周周一（getDay: 0=周日）
-	const monday = new Date(today)
-	const dow = (today.getDay() + 6) % 7
-	monday.setDate(monday.getDate() - dow)
 	const cols = []
-	for (let w = props.weeks - 1; w >= 0; w--) {
+	columnStarts.value.forEach((start) => {
 		const col = []
 		for (let d = 0; d < 7; d++) {
-			const day = new Date(monday)
-			day.setDate(monday.getDate() - w * 7 + d)
+			const day = new Date(start)
+			day.setDate(start.getDate() + d)
 			const future = day.getTime() > today.getTime()
 			col.push({ on: !future && set.has(keyOf(day)), future })
 		}
 		cols.push(col)
-	}
+	})
 	return cols
 })
 
@@ -109,6 +135,19 @@ function cellStyle(cell) {
 	.hm-sub {
 		font-size: 22rpx;
 		color: var(--text-aux);
+	}
+
+	.hm-months {
+		display: flex;
+		flex-direction: row;
+		margin-bottom: 8rpx;
+	}
+
+	.hm-month {
+		flex: 1;
+		font-size: 18rpx;
+		color: var(--text-weak);
+		text-align: left;
 	}
 
 	.hm-grid {
