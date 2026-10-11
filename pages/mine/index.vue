@@ -94,6 +94,15 @@
 		<!-- 备份与恢复弹层 -->
 		<data-backup-sheet :visible="backupVisible" @close="backupVisible = false" />
 
+		<!-- 字体大小选择（自带主题，暗色下也看得清） -->
+		<app-action-sheet
+			:visible="fsSheetVisible"
+			title="字体大小"
+			:items="fsItems"
+			@close="fsSheetVisible = false"
+			@select="onFsSelect"
+		/>
+
 		<!-- 底部导航（我的为第二项） -->
 		<app-tab-bar :current="1" />
 	</view>
@@ -177,21 +186,23 @@ function openHelp() {
 	uni.navigateTo({ url: '/pages/help/index' })
 }
 
-/** 字体大小：三档，选完立即生效（只影响正文与说明，标题/按钮不动） */
+/** 字体大小：三档，选完立即生效（只影响正文与说明，标题/按钮不动）。
+ *  用自己的弹层而不是 uni.showActionSheet：系统那个在暗色下深底深字看不清。 */
 const fsLabel = ref(fontScaleLabel())
+const fsSheetVisible = ref(false)
+const fsItems = computed(() => SCALES.map((s) => ({ label: s.label })))
 
 function chooseFontScale() {
-	uni.showActionSheet({
-		itemList: SCALES.map((s) => s.label),
-		success: (res) => {
-			const hit = SCALES[res.tapIndex]
-			if (!hit) return
-			setFontScaleKey(hit.key)
-			refreshFontScale()
-			fsLabel.value = hit.label
-			uni.showToast({ title: `字号：${hit.label}`, icon: 'none' })
-		}
-	})
+	fsSheetVisible.value = true
+}
+
+function onFsSelect(i) {
+	const hit = SCALES[i]
+	if (!hit) return
+	setFontScaleKey(hit.key)
+	refreshFontScale()
+	fsLabel.value = hit.label
+	uni.showToast({ title: `字号：${hit.label}`, icon: 'none' })
 }
 
 onShow(() => {

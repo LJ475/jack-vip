@@ -315,6 +315,14 @@
 			</view>
 		</view>
 
+		<!-- 「···」更多操作（自带主题，暗色下也看得清） -->
+		<app-action-sheet
+			:visible="moreVisible"
+			:items="moreItems"
+			@close="moreVisible = false"
+			@select="onMoreSelect"
+		/>
+
 		<view class="safe-bottom"></view>
 	</view>
 </template>
@@ -559,14 +567,21 @@ const recordsShown = computed(() => {
 /* ==================== 更多操作：编辑 / 归档 / 删除 ==================== */
 
 function onMore() {
-	uni.showActionSheet({
-		itemList: ['编辑目标', '归档目标', '删除目标'],
-		success: (res) => {
-			if (res.tapIndex === 0) openEditSheet()
-			if (res.tapIndex === 1) archiveGoal()
-			if (res.tapIndex === 2) deleteGoal()
-		}
-	})
+	moreVisible.value = true
+}
+
+/** 「···」菜单的选择（自己画的弹层，暗色下也看得清） */
+const moreVisible = ref(false)
+const moreItems = [
+	{ label: '编辑目标' },
+	{ label: '归档目标' },
+	{ label: '删除目标', danger: true }
+]
+
+function onMoreSelect(i) {
+	if (i === 0) openEditSheet()
+	if (i === 1) archiveGoal()
+	if (i === 2) deleteGoal()
 }
 
 function archiveGoal() {
