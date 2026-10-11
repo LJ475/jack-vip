@@ -186,7 +186,7 @@ function saveImage() {
 	.detail-caption {
 		display: block;
 		margin-top: 24rpx;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text);
 		line-height: 1.7;
 	}
@@ -198,7 +198,7 @@ function saveImage() {
 	}
 
 	.detail-date {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 16rpx;
 	}
@@ -212,7 +212,7 @@ function saveImage() {
 	}
 
 	.detail-missing-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 </style>

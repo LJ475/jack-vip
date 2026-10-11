@@ -104,14 +104,14 @@ function save(it) {
 	}
 
 	.viewer-date {
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 600;
 		color: #FFFFFF;
 	}
 
 	.viewer-count {
 		margin-left: 16rpx;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: rgba(255, 255, 255, 0.55);
 	}
 
@@ -142,7 +142,7 @@ function save(it) {
 
 	.viewer-hint {
 		padding: 20rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: rgba(255, 255, 255, 0.45);
 		text-align: center;
 	}

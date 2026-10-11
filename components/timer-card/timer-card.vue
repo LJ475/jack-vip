@@ -88,7 +88,7 @@ function onTap() {
 	}
 
 	.timer-meta {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 10rpx;
 	}

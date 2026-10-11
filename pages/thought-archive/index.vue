@@ -1,5 +1,5 @@
 <template>
-	<view class="page archive-page" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page archive-page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 		<view class="ar-nav">
 			<view class="ar-side" @click="goBack">
 				<uni-icons type="left" size="20" color="var(--text)" />
@@ -42,6 +42,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { getAllNotes } from '@/utils/thought-notes.js'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
 
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
@@ -112,6 +113,7 @@ onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	refreshFontScale()
 	refresh()
 })
 </script>
@@ -154,7 +156,7 @@ onShow(() => {
 
 	.ar-sum {
 		display: block;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin: 8rpx 0 20rpx 6rpx;
 	}
@@ -167,13 +169,13 @@ onShow(() => {
 	}
 
 	.ar-month-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text);
 	}
 
 	.ar-month-count {
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-weak);
 	}
 
@@ -202,14 +204,14 @@ onShow(() => {
 
 	.ar-item-day {
 		display: block;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-bottom: 8rpx;
 	}
 
 	.ar-item-text {
 		display: block;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		line-height: 1.5;
 		overflow: hidden;
@@ -225,7 +227,7 @@ onShow(() => {
 	}
 
 	.ar-empty-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin-top: 20rpx;
 	}

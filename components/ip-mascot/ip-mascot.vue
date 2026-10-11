@@ -260,7 +260,7 @@ function onTap() {
 		border: 1rpx solid var(--border-soft, rgba(23, 33, 58, 0.1));
 		border-radius: 20rpx 20rpx 20rpx 6rpx;
 		box-shadow: 0 8rpx 24rpx rgba(31, 45, 61, 0.14);
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text, #333);
 		line-height: 1.4;
 		white-space: nowrap;

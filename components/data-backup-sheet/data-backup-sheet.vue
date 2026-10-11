@@ -172,7 +172,7 @@ function applyImport(keys) {
 
 	.bh-tip {
 		display: block;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		line-height: 1.7;
 		color: var(--text-secondary);
 	}
@@ -187,7 +187,7 @@ function applyImport(keys) {
 
 	.bh-note {
 		display: block;
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		line-height: 1.6;
 		color: var(--text-weak);
 		margin-top: 18rpx;

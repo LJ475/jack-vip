@@ -1,5 +1,5 @@
 <template>
-	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 
 		<!-- 二级页头部：返回箭头 + 页面标题（左对齐） -->
 		<view class="sub-nav">
@@ -149,6 +149,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow, onHide } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
 import {
 	listTimers,
 	saveTimers,
@@ -390,6 +391,7 @@ onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	refreshFontScale()
 	subscribeClock('work')
 	// tab 页切走不再销毁，秒级轮询跟着显示/隐藏启停：
 	// 停在后台还在轮询闹钟，会在别的页面上抢着响铃、抢着落库
@@ -491,7 +493,7 @@ onUnmounted(() => {
 	}
 
 	.create-sub {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 6rpx;
 	}
@@ -524,7 +526,7 @@ onUnmounted(() => {
 	}
 
 	.clear-text {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 6rpx;
 	}
@@ -549,7 +551,7 @@ onUnmounted(() => {
 	}
 
 	.state-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 24rpx;
 	}
@@ -646,14 +648,14 @@ onUnmounted(() => {
 
 	.remain-meta {
 		display: block;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		text-align: center;
 		margin-top: 12rpx;
 	}
 
 	.remain-tip {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		line-height: 1.6;
 		background: var(--brand-light);
@@ -687,7 +689,7 @@ onUnmounted(() => {
 	}
 
 	.done-name {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 8rpx;
 	}
@@ -720,7 +722,7 @@ onUnmounted(() => {
 		border-radius: 50%;
 		background: var(--brand-light);
 		color: var(--brand);
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		font-weight: 600;
 		display: flex;
 		align-items: center;
@@ -732,7 +734,7 @@ onUnmounted(() => {
 	.tips-line {
 		flex: 1;
 		margin-left: 16rpx;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		line-height: 1.65;
 	}
@@ -779,7 +781,7 @@ onUnmounted(() => {
 	}
 
 	.ring-sub {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 8rpx;
 	}

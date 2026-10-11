@@ -1,5 +1,5 @@
 <template>
-	<view class="page page-tabbar mine-page" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page page-tabbar mine-page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 		<!-- 头部：头像 + 名称 + 本机编号 + 说明 -->
 		<view class="mp-head">
 			<image class="mp-avatar" src="/static/logo.png" mode="aspectFill" />
@@ -66,10 +66,10 @@
 		<!-- 设置与帮助：按他的要求只做占位，先不接跳转（点了没反应，等哪天点名再做真的） -->
 		<view class="mp-card">
 			<text class="mp-card-title">设置与帮助</text>
-			<view class="mp-row">
+			<view class="mp-row" @click="chooseFontScale">
 				<text class="mp-row-aa">Aa</text>
 				<text class="mp-row-title">字体大小</text>
-				<text class="mp-row-extra">标准</text>
+				<text class="mp-row-extra">{{ fsLabel }}</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
 			<view class="mp-row">
@@ -106,6 +106,7 @@ import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale, SCALES, setFontScaleKey, fontScaleLabel } from '@/utils/font-scale.js'
 import { getAllNotes, calcStreak } from '@/utils/thought-notes.js'
 import { listTimers, TIMER_STATUS } from '@/api/countdown.js'
 
@@ -169,11 +170,29 @@ function openArchive() {
 	uni.navigateTo({ url: '/pages/thought-archive/index' })
 }
 
+/** 字体大小：三档，选完立即生效（只影响正文与说明，标题/按钮不动） */
+const fsLabel = ref(fontScaleLabel())
+
+function chooseFontScale() {
+	uni.showActionSheet({
+		itemList: SCALES.map((s) => s.label),
+		success: (res) => {
+			const hit = SCALES[res.tapIndex]
+			if (!hit) return
+			setFontScaleKey(hit.key)
+			refreshFontScale()
+			fsLabel.value = hit.label
+			uni.showToast({ title: `字号：${hit.label}`, icon: 'none' })
+		}
+	})
+}
+
 onShow(() => {
 	hideNativeTabBar()
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	refreshFontScale()
 	deviceNo.value = ensureDeviceNo()
 	refreshCounts()
 })
@@ -230,13 +249,13 @@ onShow(() => {
 	}
 
 	.mp-id {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
 	.mp-slogan {
 		display: block;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 8rpx;
 	}
@@ -271,7 +290,7 @@ onShow(() => {
 	}
 
 	.mp-stat-label {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin: 6rpx 0 10rpx;
 	}
@@ -347,14 +366,14 @@ onShow(() => {
 
 	.mp-entry-title {
 		display: block;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text);
 	}
 
 	.mp-entry-desc {
 		display: block;
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 6rpx;
 		overflow: hidden;
@@ -398,7 +417,7 @@ onShow(() => {
 
 	.mp-row-title {
 		flex: 1;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text);
 		margin-left: 20rpx;
 	}
@@ -406,14 +425,14 @@ onShow(() => {
 	/* 「字体大小」那行左侧的 Aa 字符，跟图标一样占 18 号的位置 */
 	.mp-row-aa {
 		width: 36rpx;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 700;
 		color: var(--text-secondary);
 		text-align: center;
 	}
 
 	.mp-row-extra {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-right: 10rpx;
 	}

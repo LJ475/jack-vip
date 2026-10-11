@@ -141,7 +141,7 @@ function onTap() {
 	}
 
 	.goal-tag {
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		line-height: 1;
 		padding: 6rpx 14rpx;
 		border-radius: 999rpx;
@@ -151,7 +151,7 @@ function onTap() {
 
 	.goal-desc {
 		display: block;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 8rpx;
 		overflow: hidden;
@@ -196,7 +196,7 @@ function onTap() {
 	}
 
 	.milestone-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 8rpx;
 	}

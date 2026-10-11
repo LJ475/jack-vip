@@ -287,7 +287,7 @@ function confirm() {
 
 	.field-label {
 		display: block;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -320,7 +320,7 @@ function confirm() {
 		flex: 1;
 		height: 60rpx;
 		margin-left: 12rpx;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text);
 		background: transparent;
 		border: none;
@@ -371,7 +371,7 @@ function confirm() {
 
 	.step-tip {
 		display: block;
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin-top: 10rpx;
 	}
@@ -400,7 +400,7 @@ function confirm() {
 	}
 
 	.preset-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		margin-left: 8rpx;
 	}
 
@@ -410,7 +410,7 @@ function confirm() {
 
 	.input-tip {
 		text-align: center;
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin-top: 14rpx;
 	}

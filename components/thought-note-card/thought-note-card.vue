@@ -128,7 +128,7 @@ function openArchive() {
 
 	.thought-title {
 		margin-left: 8rpx;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text);
 	}
@@ -146,7 +146,7 @@ function openArchive() {
 
 	.thought-streak-text {
 		margin-left: 4rpx;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		font-weight: 500;
 		color: var(--warning);
 	}
@@ -182,7 +182,7 @@ function openArchive() {
 
 	.thought-item-text {
 		display: block;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		line-height: 1.5;
 		overflow: hidden;
@@ -192,7 +192,7 @@ function openArchive() {
 
 	.thought-item-time {
 		display: block;
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin-top: 6rpx;
 	}
@@ -208,7 +208,7 @@ function openArchive() {
 	}
 
 	.thought-hint {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-weak);
 	}
 
@@ -220,7 +220,7 @@ function openArchive() {
 
 	.thought-placeholder {
 		display: block;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-weak);
 		line-height: 1.7;
 		text-align: center;
@@ -235,7 +235,7 @@ function openArchive() {
 	}
 
 	.thought-archive-link {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 18rpx;
 	}

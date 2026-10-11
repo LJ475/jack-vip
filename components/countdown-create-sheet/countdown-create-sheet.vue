@@ -283,7 +283,7 @@ function confirm() {
 		flex: 1;
 		height: 60rpx;
 		margin-left: 12rpx;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text);
 		background: transparent;
 		border: none;
@@ -316,7 +316,7 @@ function confirm() {
 	}
 
 	.quick-text {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-secondary);
 	}
 

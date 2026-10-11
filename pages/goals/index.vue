@@ -1,5 +1,5 @@
 <template>
-	<view class="page" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 
 		<!-- 二级页头部：返回箭头 + 页面标题（左对齐） -->
 		<view class="sub-nav">
@@ -101,6 +101,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { onShow, onHide, onReachBottom } from '@dcloudio/uni-app'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
 import { nowTs, subscribeClock, unsubscribeClock } from '@/utils/ticker.js'
 
 // 本页数据全部本地存储；首次进入用默认目标播种，之后以本机数据为准
@@ -427,6 +428,7 @@ onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	refreshFontScale()
 	loadGoals()
 	ready.value = true
 	subscribeClock('goals')
@@ -493,7 +495,7 @@ onReachBottom(() => {
 	}
 
 	.overview-label {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-secondary);
 	}
 
@@ -511,13 +513,13 @@ onReachBottom(() => {
 	}
 
 	.days-unit {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 10rpx;
 	}
 
 	.days-tick {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 18rpx;
 		letter-spacing: 1rpx;
@@ -567,7 +569,7 @@ onReachBottom(() => {
 	}
 
 	.ring-label {
-		font-size: 18rpx;
+		font-size: calc(18rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 4rpx;
 	}
@@ -580,21 +582,21 @@ onReachBottom(() => {
 	}
 
 	.overview-range-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text-secondary);
 		margin-right: 12rpx;
 	}
 
 	.range-arrow {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-right: 12rpx;
 	}
 
 	.overview-quote {
 		display: block;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 10rpx;
 	}
@@ -620,7 +622,7 @@ onReachBottom(() => {
 	}
 
 	.section-count {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 6rpx;
 	}
@@ -631,7 +633,7 @@ onReachBottom(() => {
 	}
 
 	.local-badge-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 6rpx;
 	}
@@ -659,7 +661,7 @@ onReachBottom(() => {
 	}
 
 	.create-goal-text {
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--brand);
 		margin-left: 20rpx;
@@ -679,7 +681,7 @@ onReachBottom(() => {
 	}
 
 	.local-tip-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin: 0 10rpx;
 	}

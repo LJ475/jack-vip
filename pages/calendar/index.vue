@@ -1,5 +1,5 @@
 <template>
-	<view class="page page-tabbar" :class="{ 'theme-thought': isThoughtMode }">
+	<view class="page page-tabbar" :class="{ 'theme-thought': isThoughtMode }" :style="{ '--fs': fsVar }">
 
 		<!-- ① 页面标题（Hero） -->
 		<view class="hero">
@@ -159,6 +159,7 @@ import { onShow, onHide } from '@dcloudio/uni-app'
 import { getShareDates, getSharesByDate, getMonthShares, CONTENT_MODE } from '@/api/shares.js'
 import { checkPendingAlarm } from '@/api/countdown.js'
 import { getAppMode, setAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
 
 const STORAGE_KEY = 'lastSelectedDate'
 
@@ -186,6 +187,7 @@ const initialDate = isValidDate(lastSelected) ? lastSelected : today
 const mode = ref(getAppMode())
 // H5：把主题类挂到 html 根节点（滚动条/overscroll 底色跟随主题）
 syncRootTheme(mode.value)
+	refreshFontScale()
 const selectedDate = ref(initialDate)
 const currentMonth = ref(initialDate.slice(0, 7))
 // 两种模式各自的打点日期集合
@@ -525,7 +527,7 @@ onHide(() => {
 
 	.mode-text {
 		margin-left: 10rpx;
-		font-size: 27rpx;
+		font-size: calc(27rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		transition: color 0.25s;
 	}
@@ -696,7 +698,7 @@ onHide(() => {
 	.day-label-dot--thought { background: #F59E0B; }
 
 	.day-label {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -709,7 +711,7 @@ onHide(() => {
 	}
 
 	.state-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 20rpx;
 	}
@@ -738,7 +740,7 @@ onHide(() => {
 	.share-caption {
 		display: block;
 		padding: 24rpx 28rpx 0;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		line-height: 1.6;
 		overflow: hidden;
@@ -756,7 +758,7 @@ onHide(() => {
 	}
 
 	.share-time {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin-left: 16rpx;
 	}

@@ -346,7 +346,7 @@ function onReminderTimeChange(e) {
 	}
 
 	.seg-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-secondary);
 	}
 
@@ -371,7 +371,7 @@ function onReminderTimeChange(e) {
 	.about-hint {
 		display: block;
 		margin-top: 24rpx;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 		line-height: 1.7;
 		text-align: center;
@@ -396,7 +396,7 @@ function onReminderTimeChange(e) {
 
 	.reminder-head-text {
 		margin-left: 8rpx;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text);
 	}
@@ -409,12 +409,12 @@ function onReminderTimeChange(e) {
 	}
 
 	.reminder-label {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-secondary);
 	}
 
 	.reminder-time {
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--brand);
 		margin-right: 8rpx;
@@ -428,7 +428,7 @@ function onReminderTimeChange(e) {
 	.reminder-tip {
 		display: block;
 		padding: 4rpx 4rpx 16rpx;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-weak);
 		line-height: 1.6;
 	}
@@ -442,7 +442,7 @@ function onReminderTimeChange(e) {
 	.about-thanks-note {
 		display: block;
 		margin-top: 28rpx;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		line-height: 1.7;
 		text-align: center;
@@ -497,7 +497,7 @@ function onReminderTimeChange(e) {
 	.contrib-name {
 		margin-top: 10rpx;
 		max-width: 96rpx;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -520,7 +520,7 @@ function onReminderTimeChange(e) {
 
 	.contrib-state-text {
 		margin-top: 20rpx;
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 

@@ -1,5 +1,5 @@
 <template>
-	<view class="page notebook" :class="{ 'theme-thought': isThoughtTheme }">
+	<view class="page notebook" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 		<!-- 顶栏：返回 / 日期 / 保存 -->
 		<view class="nb-head">
 			<view class="nb-back" @click="close">
@@ -41,6 +41,7 @@ import { onLoad, onUnload } from '@dcloudio/uni-app'
 import { NOTE_MAX_LEN, getNoteById, addNote, updateNote } from '@/utils/thought-notes.js'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
 
 const WEEKS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
@@ -74,6 +75,7 @@ onLoad((query) => {
 	// 这个页面是新开的 webview，底色跟着主题先刷一遍，否则暗色下进本页会闪一下浅蓝
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
+	refreshFontScale()
 	// 奶酪体只在这一页按需加载：不写进全局 CSS，首页与切页不为它买单。
 	// 也不能写在 <style> 的 @font-face url() 里——vite 编译期会去解析该文件，字体没到位时整个包编不过。
 	// 参数名是 source（不是 src）：uni-h5 的实现里直接 source.startsWith()，传错会抛异常打断 onLoad。
@@ -171,7 +173,7 @@ onUnload(() => {
 	}
 
 	.nb-week {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 12rpx;
 	}
@@ -191,7 +193,7 @@ onUnload(() => {
 	}
 
 	.nb-save-text {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--on-brand);
 	}
@@ -225,7 +227,8 @@ onUnload(() => {
 		padding: 0;
 		background: transparent;
 		line-height: 88rpx;
-		font-size: 34rpx;
+		/* 正文字号跟着「字体大小」档位走（本子是最该能调大的地方） */
+		font-size: calc(34rpx * var(--fs, 1));
 		color: var(--nb-ink);
 		font-family: 'NailaoHand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 	}
@@ -243,12 +246,12 @@ onUnload(() => {
 	}
 
 	.nb-count {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
 	.nb-hint {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-weak);
 	}
 </style>

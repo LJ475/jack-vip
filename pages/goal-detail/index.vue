@@ -28,7 +28,7 @@
 		</view>
 	</view>
 
-	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" :style="goal ? { '--goal-accent': goal.color } : {}" v-else>
+	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" :style="goal ? { '--goal-accent': goal.color, '--fs': fsVar } : { '--fs': fsVar }" v-else>
 
 		<!-- ① 顶部导航：返回 + 标题 + 更多 -->
 		<view class="nav">
@@ -331,6 +331,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
+import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
 
 const STORAGE_KEY = 'goals2030'
 
@@ -431,6 +432,7 @@ onShow(() => {
 	isThoughtTheme.value = getAppMode() === 'thought'
 	syncStatusBarTheme(isThoughtTheme.value ? 'thought' : 'image')
 	syncRootTheme(isThoughtTheme.value ? 'thought' : 'image')
+	refreshFontScale()
 
 	const saved = loadFromStorage()
 	startMonthText.value = saved.startMonth || '2026.08'
@@ -896,7 +898,7 @@ function saveAmount() {
 	}
 
 	.ov-tag {
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		line-height: 1;
 		padding: 6rpx 14rpx;
 		border-radius: 999rpx;
@@ -906,7 +908,7 @@ function saveAmount() {
 
 	.ov-desc {
 		display: block;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		margin-top: 10rpx;
 		line-height: 1.5;
@@ -932,7 +934,7 @@ function saveAmount() {
 	}
 
 	.ov-foot-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		margin-left: 8rpx;
 	}
@@ -947,7 +949,7 @@ function saveAmount() {
 	}
 
 	.ov-chip-text {
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 6rpx;
 	}
@@ -1004,7 +1006,7 @@ function saveAmount() {
 	}
 
 	.ring-label {
-		font-size: 18rpx;
+		font-size: calc(18rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -1023,7 +1025,7 @@ function saveAmount() {
 	}
 
 	.num-label {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -1041,7 +1043,7 @@ function saveAmount() {
 	}
 
 	.num-unit {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 6rpx;
 	}
@@ -1074,7 +1076,7 @@ function saveAmount() {
 	}
 
 	.cheer-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 8rpx;
 	}
@@ -1096,14 +1098,14 @@ function saveAmount() {
 	}
 
 	.card-head-title {
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text);
 		margin-left: 10rpx;
 	}
 
 	.card-head-extra {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -1128,7 +1130,7 @@ function saveAmount() {
 	}
 
 	.checkin-day-label {
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-weak);
 	}
 
@@ -1202,7 +1204,7 @@ function saveAmount() {
 	}
 
 	.ms-empty-text {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -1272,13 +1274,13 @@ function saveAmount() {
 	}
 
 	.ms-name {
-		font-size: 26rpx;
+		font-size: calc(26rpx * var(--fs, 1));
 		font-weight: 600;
 		color: var(--text);
 	}
 
 	.ms-nums {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-secondary);
 		margin-left: 16rpx;
 		flex-shrink: 0;
@@ -1286,14 +1288,14 @@ function saveAmount() {
 
 	.ms-desc {
 		display: block;
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 6rpx;
 	}
 
 	.ms-date {
 		display: block;
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-weak);
 		margin-top: 6rpx;
 	}
@@ -1311,7 +1313,7 @@ function saveAmount() {
 	}
 
 	.record-add-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--brand);
 		margin-left: 4rpx;
 	}
@@ -1321,7 +1323,7 @@ function saveAmount() {
 	}
 
 	.record-empty-text {
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -1345,7 +1347,7 @@ function saveAmount() {
 	}
 
 	.record-date {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-left: 16rpx;
 		flex-shrink: 0;
@@ -1353,7 +1355,7 @@ function saveAmount() {
 
 	.record-text {
 		flex: 1;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text);
 		margin-left: 18rpx;
 		margin-right: 12rpx;
@@ -1363,7 +1365,7 @@ function saveAmount() {
 	}
 
 	.record-tag {
-		font-size: 20rpx;
+		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-aux);
 		background: var(--btn-ghost-bg);
 		border-radius: 999rpx;
@@ -1390,7 +1392,7 @@ function saveAmount() {
 	}
 
 	.record-expand-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-right: 6rpx;
 	}
@@ -1486,7 +1488,7 @@ function saveAmount() {
 
 	.field-label {
 		display: block;
-		font-size: 24rpx;
+		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
@@ -1505,7 +1507,7 @@ function saveAmount() {
 	.form-input {
 		flex: 1;
 		height: 60rpx;
-		font-size: 28rpx;
+		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text);
 		background: transparent;
 		border: none;
@@ -1577,7 +1579,7 @@ function saveAmount() {
 	}
 
 	.ms-pick-text {
-		font-size: 22rpx;
+		font-size: calc(22rpx * var(--fs, 1));
 		color: var(--text);
 	}
 
