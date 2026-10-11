@@ -1,18 +1,17 @@
 <template>
 	<view class="page notebook" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 		<!-- 顶栏：返回 / 日期 / 保存 -->
-		<view class="nb-head">
-			<view class="nb-back" @click="close">
-				<uni-icons type="left" size="20" color="var(--text-secondary)" />
-			</view>
+		<app-nav-bar>
 			<view class="nb-date-wrap">
 				<text class="nb-date">{{ dateText }}</text>
 				<text class="nb-week">{{ weekText }}</text>
 			</view>
-			<view class="nb-save" :class="{ 'nb-save-dim': !dirty }" @click="close">
-				<text class="nb-save-text">保存</text>
-			</view>
-		</view>
+			<template #right>
+				<view class="nb-save" :class="{ 'nb-save-dim': !dirty }" @click="close">
+					<text class="nb-save-text">保存</text>
+				</view>
+			</template>
+		</app-nav-bar>
 
 		<!-- 横线纸：行线画在纸上，输入框透明且随内容长高，整页跟着滚（光标永远在可见区域里） -->
 		<view class="nb-paper">
@@ -143,20 +142,7 @@ onUnload(() => {
 		--nb-ink-soft: #85858D;
 	}
 
-	.nb-head {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		padding-bottom: 16rpx;
-	}
 
-	.nb-back {
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
 
 	.nb-date-wrap {
 		flex: 1;

@@ -1,10 +1,7 @@
 <template>
 	<view class="about-page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
-		<!-- 顶部：返回 + 分段胶囊 -->
-		<view class="ab-head">
-			<view class="ab-back" @click="goBack">
-				<uni-icons type="left" size="22" color="var(--text)" />
-			</view>
+		<!-- 顶部：统一导航组件（中间放分段胶囊） -->
+		<app-nav-bar class="ab-nav">
 			<view class="ab-seg">
 				<view class="ab-seg-item" :class="{ active: tab === 'me' }" @click="switchTab('me')">
 					<text class="ab-seg-text">关于我</text>
@@ -13,7 +10,7 @@
 					<text class="ab-seg-text">支持记录</text>
 				</view>
 			</view>
-		</view>
+		</app-nav-bar>
 
 		<!-- ===== 关于我 ===== -->
 		<template v-if="tab === 'me'">
@@ -153,12 +150,6 @@ const selectedContributor = computed(
 	() => contributors.value.find((c) => c.id === selectedId.value) || null
 )
 
-function goBack() {
-	const pages = getCurrentPages()
-	if (pages.length > 1) uni.navigateBack()
-	else uni.switchTab({ url: '/pages/mine/index' })
-}
-
 function switchTab(t) {
 	if (tab.value === t) return
 	tab.value = t
@@ -252,22 +243,7 @@ onShow(() => {
 		--ab-soft: rgba(255, 255, 255, 0.05);
 	}
 
-	/* ===== 顶部 ===== */
-	.ab-head {
-		display: flex;
-		align-items: center;
-		margin-bottom: 24rpx;
-	}
 
-	.ab-back {
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-left: -14rpx;
-		flex-shrink: 0;
-	}
 
 	.ab-seg {
 		flex: 1;

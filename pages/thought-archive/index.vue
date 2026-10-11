@@ -1,12 +1,6 @@
 <template>
 	<view class="page archive-page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
-		<view class="ar-nav">
-			<view class="ar-side" @click="goBack">
-				<uni-icons type="left" size="20" color="var(--text)" />
-			</view>
-			<text class="ar-title">往期回顾</text>
-			<view class="ar-side"></view>
-		</view>
+		<app-nav-bar title="往期回顾" align="center" />
 
 		<text class="ar-sum" v-if="notes.length">共 {{ notes.length }} 篇 · 按月份分组</text>
 
@@ -98,12 +92,6 @@ function openNote(n) {
 	})
 }
 
-function goBack() {
-	const pages = getCurrentPages()
-	if (pages.length > 1) uni.navigateBack()
-	else uni.switchTab({ url: '/pages/calendar/index' })
-}
-
 function refresh() {
 	notes.value = getAllNotes()
 	shown.value = 30
@@ -132,27 +120,8 @@ onShow(() => {
 		--ar-bg: linear-gradient(180deg, #0C0C11 0%, #0B0B0F 100%);
 	}
 
-	.ar-nav {
-		display: flex;
-		align-items: center;
-		margin-bottom: 8rpx;
-	}
 
-	.ar-side {
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
 
-	.ar-title {
-		flex: 1;
-		text-align: center;
-		font-size: 32rpx;
-		font-weight: 600;
-		color: var(--text);
-	}
 
 	.ar-sum {
 		display: block;

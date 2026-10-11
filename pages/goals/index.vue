@@ -1,13 +1,8 @@
 <template>
 	<view class="page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 
-		<!-- 二级页头部：返回箭头 + 页面标题（左对齐） -->
-		<view class="sub-nav">
-			<view class="sub-nav-btn" @click="goBack">
-				<uni-icons type="left" size="22" color="var(--text)" />
-			</view>
-			<text class="sub-nav-title">2030 目标</text>
-		</view>
+		<!-- 二级页头部：统一组件 -->
+		<app-nav-bar title="2030 目标" />
 
 		<!-- ① 目标进度总览卡（截止日期可自定义：点时间范围行修改） -->
 		<view class="overview-card">
@@ -401,13 +396,6 @@ function goDetail(g) {
 	uni.navigateTo({ url: `/pages/goal-detail/index?id=${encodeURIComponent(g.id)}` })
 }
 
-/** 二级页返回：正常是返回「我的」，被直接打开时兜底回到「我的」 */
-function goBack() {
-	const pages = getCurrentPages()
-	if (pages.length > 1) uni.navigateBack()
-	else uni.switchTab({ url: '/pages/mine/index' })
-}
-
 /** 列表页直接删：确认文案与目标详情页的删除保持一致 */
 function askDelete(g) {
 	uni.showModal({
@@ -454,29 +442,8 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
-	/* 二级页头部：返回箭头 + 标题左对齐 */
-	.sub-nav {
-		display: flex;
-		align-items: center;
-		margin-bottom: 20rpx;
-	}
 
-	.sub-nav-btn {
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-left: -14rpx;
-		flex-shrink: 0;
-	}
 
-	.sub-nav-title {
-		font-size: 40rpx;
-		font-weight: 700;
-		color: var(--text);
-		margin-left: 6rpx;
-	}
 
 	/* ===== 2030 进度总览卡（整页唯一强视觉大卡） ===== */
 	.overview-card {

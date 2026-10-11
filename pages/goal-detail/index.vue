@@ -1,13 +1,7 @@
 <template>
 	<!-- 首帧骨架：goal 要到 onShow 才取到，在那之前整页是空白；复用真页面的类保证尺寸一致 -->
 	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" v-if="!goal">
-		<view class="nav">
-			<view class="nav-side" @click="goBack">
-				<uni-icons type="left" size="20" color="var(--text)" />
-			</view>
-			<text class="nav-title">目标详情</text>
-			<view class="nav-side"></view>
-		</view>
+		<app-nav-bar title="目标详情" align="center" />
 		<view class="overview-card">
 			<view class="ov-main">
 				<skeleton-block w="88rpx" h="88rpx" circle />
@@ -31,15 +25,13 @@
 	<view class="page detail-page" :class="{ 'theme-thought': isThoughtTheme }" :style="goal ? { '--goal-accent': goal.color, '--fs': fsVar } : { '--fs': fsVar }" v-else>
 
 		<!-- ① 顶部导航：返回 + 标题 + 更多 -->
-		<view class="nav">
-			<view class="nav-side" @click="goBack">
-				<uni-icons type="left" size="20" color="var(--text)" />
-			</view>
-			<text class="nav-title">目标详情</text>
-			<view class="nav-side" @click="onMore">
-				<uni-icons type="more-filled" size="20" color="var(--text)" />
-			</view>
-		</view>
+		<app-nav-bar title="目标详情" align="center">
+			<template #right>
+				<view class="nav-side" @click="onMore">
+					<uni-icons type="more-filled" size="20" color="var(--text)" />
+				</view>
+			</template>
+		</app-nav-bar>
 
 		<!-- ② 目标概览卡 -->
 		<view class="overview-card">
@@ -829,14 +821,6 @@ function saveAmount() {
 		padding-bottom: 0;
 	}
 
-	/* ===== ① 顶部导航 ===== */
-	.nav {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		padding: 8rpx 8rpx 20rpx;
-	}
 
 	.nav-side {
 		width: 64rpx;
@@ -848,11 +832,6 @@ function saveAmount() {
 		justify-content: center;
 	}
 
-	.nav-title {
-		font-size: 32rpx;
-		font-weight: 600;
-		color: var(--text);
-	}
 
 	/* ===== ② 目标概览卡 ===== */
 	.overview-card {

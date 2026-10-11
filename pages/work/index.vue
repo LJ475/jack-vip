@@ -1,13 +1,8 @@
 <template>
 	<view class="page" :class="{ 'theme-thought': isThoughtTheme }" :style="{ '--fs': fsVar }">
 
-		<!-- 二级页头部：返回箭头 + 页面标题（左对齐） -->
-		<view class="sub-nav">
-			<view class="sub-nav-btn" @click="goBack">
-				<uni-icons type="left" size="22" color="var(--text)" />
-			</view>
-			<text class="sub-nav-title">干正事</text>
-		</view>
+		<!-- 二级页头部：统一组件 -->
+		<app-nav-bar title="干正事" />
 
 		<!-- 主要操作：新建倒计时（sheen：黑金主题下带周期扫光） -->
 		<view class="create-entry glassmorphism sheen" @click="openCreate">
@@ -190,13 +185,6 @@ function persist() {
 
 function openCreate() {
 	createVisible.value = true
-}
-
-/** 二级页返回：正常是返回「我的」，被直接打开时兜底回到「我的」 */
-function goBack() {
-	const pages = getCurrentPages()
-	if (pages.length > 1) uni.navigateBack()
-	else uni.switchTab({ url: '/pages/mine/index' })
 }
 
 /** 创建后：保存本地任务并设置原生闹钟 */
@@ -436,29 +424,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-	/* 二级页头部：返回箭头 + 标题左对齐 */
-	.sub-nav {
-		display: flex;
-		align-items: center;
-		margin-bottom: 20rpx;
-	}
 
-	.sub-nav-btn {
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-left: -14rpx;
-		flex-shrink: 0;
-	}
 
-	.sub-nav-title {
-		font-size: 40rpx;
-		font-weight: 700;
-		color: var(--text);
-		margin-left: 6rpx;
-	}
 
 	/* ===== 新建倒计时入口卡 ===== */
 	.create-entry {
