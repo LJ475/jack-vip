@@ -135,11 +135,11 @@ onUnload(() => {
 	   而这里的浅色底是 .notebook + scoped 属性（两级），不一起改的话暗色下纸是黑的、
 	   纸外面还是浅蓝，顶部日期也会变成浅字亮底看不见。 */
 	.notebook.theme-thought {
-		/* 暗色：墨黑纸 + 弱金行线 */
+		/* 暗色：墨黑纸 + 弱金行线，写在纸上的字用品牌主金（他要金色，不要近白） */
 		--nb-page-bg: linear-gradient(180deg, #0C0C11 0%, #0B0B0F 100%);
 		--nb-paper: #101014;
 		--nb-line: rgba(232, 179, 65, 0.3);
-		--nb-ink: #E8E8EA;
+		--nb-ink: #E8B341;
 		--nb-ink-soft: #85858D;
 	}
 
