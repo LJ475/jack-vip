@@ -63,6 +63,32 @@
 			</view>
 		</view>
 
+		<!-- 设置与帮助：按他的要求只做占位，先不接跳转（点了没反应，等哪天点名再做真的） -->
+		<view class="mp-card">
+			<text class="mp-card-title">设置与帮助</text>
+			<view class="mp-row">
+				<text class="mp-row-aa">Aa</text>
+				<text class="mp-row-title">字体大小</text>
+				<text class="mp-row-extra">标准</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
+			<view class="mp-row">
+				<uni-icons type="gear-filled" size="18" color="var(--text-secondary)" />
+				<text class="mp-row-title">通用设置</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
+			<view class="mp-row">
+				<uni-icons type="help-filled" size="18" color="var(--text-secondary)" />
+				<text class="mp-row-title">帮助与反馈</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
+			<view class="mp-row">
+				<uni-icons type="info-filled" size="18" color="var(--text-secondary)" />
+				<text class="mp-row-title">关于我们</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
+		</view>
+
 		<!-- 备份与恢复弹层 -->
 		<data-backup-sheet :visible="backupVisible" @close="backupVisible = false" />
 
@@ -370,6 +396,15 @@ onShow(() => {
 		font-size: 28rpx;
 		color: var(--text);
 		margin-left: 20rpx;
+	}
+
+	/* 「字体大小」那行左侧的 Aa 字符，跟图标一样占 18 号的位置 */
+	.mp-row-aa {
+		width: 36rpx;
+		font-size: 28rpx;
+		font-weight: 700;
+		color: var(--text-secondary);
+		text-align: center;
 	}
 
 	.mp-row-extra {
