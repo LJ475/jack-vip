@@ -77,9 +77,10 @@
 				<text class="mp-row-title">通用设置</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
-			<view class="mp-row">
+			<view class="mp-row" @click="openHelp">
 				<uni-icons type="help-filled" size="18" color="var(--text-secondary)" />
 				<text class="mp-row-title">帮助与反馈</text>
+				<text class="mp-row-extra">微信找我</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
 			<view class="mp-row" @click="openAbout">
@@ -169,6 +170,11 @@ function openArchive() {
 /** 关于我：整页（原来是个底部弹层，他要求改成跳页） */
 function openAbout() {
 	uni.navigateTo({ url: '/pages/about/index' })
+}
+
+/** 帮助与反馈：整页（里面是能加到他的微信联系方式） */
+function openHelp() {
+	uni.navigateTo({ url: '/pages/help/index' })
 }
 
 /** 字体大小：三档，选完立即生效（只影响正文与说明，标题/按钮不动） */

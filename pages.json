@@ -50,6 +50,13 @@
 			}
 		},
 		{
+			"path": "pages/help/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
 			"path": "pages/work/index",
 			"style": {
 				"navigationStyle": "custom",
