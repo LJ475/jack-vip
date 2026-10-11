@@ -15,11 +15,6 @@
 			<view class="hero-text">
 				<text class="hero-title">jack会员分享</text>
 			</view>
-			<!-- 右上角「关于我」入口（sheen：黑金主题下带周期扫光） -->
-			<view class="hero-about sheen" @click="openAbout">
-				<uni-icons type="person" size="15" color="var(--brand)" />
-				<text class="hero-about-text">关于我</text>
-			</view>
 		</view>
 
 		<!-- ② 模式切换（毛玻璃胶囊分段） -->
@@ -152,9 +147,6 @@
 			:index="viewerIndex"
 			@close="viewerVisible = false"
 		/>
-
-		<!-- ⑥ 关于我（抖音二维码 Sheet） -->
-		<about-me-sheet :visible="aboutVisible" @close="closeAbout" />
 
 		<!-- 底部导航（悬浮毛玻璃胶囊） -->
 		<app-tab-bar :current="0" />
@@ -367,18 +359,8 @@ function closeDetail() {
 	detailVisible.value = false
 }
 
-const aboutVisible = ref(false)
-
 /** 思考本子页返回后要重读那天的记录 */
 const noteCardRef = ref(null)
-
-function openAbout() {
-	aboutVisible.value = true
-}
-
-function closeAbout() {
-	aboutVisible.value = false
-}
 
 /* ==================== IP 形象交互 ==================== */
 
@@ -487,26 +469,6 @@ onHide(() => {
 	.brand-word {
 		color: var(--brand);
 		font-weight: 700;
-	}
-
-	/* ===== 右上角「关于我」入口 ===== */
-	.hero-about {
-		align-self: flex-start;
-		margin-left: auto;
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		height: 56rpx;
-		padding: 0 22rpx;
-		border-radius: 999rpx;
-		background: var(--brand-light);
-	}
-
-	.hero-about-text {
-		margin-left: 6rpx;
-		font-size: 24rpx;
-		font-weight: 500;
-		color: var(--brand);
 	}
 
 	/* ===== 模式切换（毛玻璃胶囊分段） ===== */
