@@ -198,6 +198,9 @@
 						<text class="record-date">{{ r.date }}</text>
 						<text class="record-text">{{ r.text }}</text>
 						<text class="record-tag">{{ r.tag }}</text>
+						<view class="record-del" @click.stop="askDeleteRecord(r, idx)">
+							<uni-icons type="trash" size="16" color="var(--text-weak)" />
+						</view>
 					</view>
 				</view>
 				<view class="record-expand" v-if="goal.records.length > 3" @click="recordsExpanded = !recordsExpanded">
@@ -683,6 +686,24 @@ function saveRecord() {
 	saveGoalToStorage(goal.value)
 	recordVisible.value = false
 	uni.showToast({ title: '已记录', icon: 'success' })
+}
+
+/** 删掉一条记录。列表展示的是 records 的切片或全量，下标就是原数组下标。
+ *  只删这条时间线记录本身（打卡那条删了不代表取消打卡，打卡有自己的撤销）。 */
+function askDeleteRecord(rec, idx) {
+	if (!goal.value) return
+	uni.showModal({
+		title: '删除这条记录',
+		content: `${rec.date} · ${rec.text}`,
+		confirmText: '删除',
+		confirmColor: '#FF5F6D',
+		success: (res) => {
+			if (!res.confirm) return
+			goal.value.records.splice(idx, 1)
+			saveGoalToStorage(goal.value)
+			uni.showToast({ title: '已删除', icon: 'none' })
+		}
+	})
 }
 
 /* ==================== 每日打卡 ==================== */
@@ -1350,6 +1371,16 @@ function saveAmount() {
 		background: var(--btn-ghost-bg);
 		border-radius: 999rpx;
 		padding: 6rpx 14rpx;
+		flex-shrink: 0;
+	}
+
+	.record-del {
+		width: 52rpx;
+		height: 52rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-left: 8rpx;
 		flex-shrink: 0;
 	}
 
