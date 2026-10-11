@@ -8,7 +8,8 @@
 				<uni-icons type="weixin" size="22" color="#27C68A" />
 				<text class="hp-title">微信找我</text>
 			</view>
-			<text class="hp-desc">用微信搜索下面这串号加我。问题、建议、哪里不好用，直接发给我就行。</text>
+			<text class="hp-desc">点下面的按钮会直接试着打开微信并跳到加好友页；跳不过去（没装微信、或系统拦了）就点「复制」，去微信搜这串号加我。</text>
+			<button class="btn btn-primary btn-lg full-btn hp-add-btn" @click="openWechat">点这里加我微信</button>
 			<view class="hp-id-box">
 				<text class="hp-id">LforovW13</text>
 				<view class="hp-copy" @click="copyWechat">
@@ -35,16 +36,36 @@ const WECHAT_ID = 'LforovW13'
 const themeMode = ref(getAppMode())
 const isThoughtTheme = computed(() => themeMode.value === CONTENT_MODE.THOUGHT)
 
-function copyWechat() {
+function copyWechat(msg) {
 	uni.setClipboardData({
 		data: WECHAT_ID,
 		success: () => {
-			uni.showToast({ title: '微信号已复制', icon: 'none' })
+			uni.showToast({ title: msg || '微信号已复制', icon: 'none' })
 		},
 		fail: () => {
 			uni.showToast({ title: '复制失败，手动记一下', icon: 'none' })
 		}
 	})
+}
+
+/** 试着直接打开微信的加好友页（weixin://dl/add?contact=微信号）。
+ *  这个 scheme 微信官方没承诺过，可能被静默拦，所以两条路都留着：
+ *  App 端用 openURL 的失败回调兜底；H5 端没法探测，就给复制 + 一句提示。 */
+function openWechat() {
+	const scheme = `weixin://dl/add?contact=${encodeURIComponent(WECHAT_ID)}`
+	// #ifdef APP-PLUS
+	try {
+		plus.runtime.openURL(scheme, () => {
+			copyWechat('没跳过去，微信号已复制')
+		})
+	} catch (e) {
+		copyWechat('没跳过去，微信号已复制')
+	}
+	// #endif
+	// #ifdef H5
+	try { window.location.href = scheme } catch (e) { /* 忽略 */ }
+	setTimeout(() => { copyWechat('没跳过去？微信号已复制') }, 1500)
+	// #endif
 }
 
 onShow(() => {
@@ -106,6 +127,10 @@ onShow(() => {
 		color: var(--text-secondary);
 		line-height: 1.7;
 		margin-top: 16rpx;
+	}
+
+	.hp-add-btn {
+		margin-top: 22rpx;
 	}
 
 	.hp-id-box {
