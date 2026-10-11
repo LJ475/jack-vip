@@ -14,5 +14,8 @@ _*.py
 _*.js
 _*.ps1
 
+# 第三方字体：授权没确认前不进公开仓库（公开＝再分发）
+static/fonts/
+
 # 依赖目录
 node_modules/
