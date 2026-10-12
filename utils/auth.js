@@ -69,6 +69,21 @@ export function currentUser() {
 }
 
 /**
+ * 页面级登录闸门：页面每次显示都验一次本机登录态，没登录就把它换回登录页。
+ * 只挡在 App.vue 的 onLaunch 是不够的——H5 里按浏览器返回、或直接改地址栏的 hash
+ * 都能落到任意页面上，那时 onLaunch 早跑完了。
+ * @returns {boolean} true = 已拦截并跳走
+ */
+export function guardSession() {
+	if (getSession()) return false
+	const pages = getCurrentPages()
+	const route = pages.length ? (pages[pages.length - 1].route || '') : ''
+	if (route === 'pages/login/index' || route === 'pages/register/index') return false
+	uni.reLaunch({ url: '/pages/login/index' })
+	return true
+}
+
+/**
  * 注册
  * @returns {Promise<{needConfirm: boolean, email: string}>} needConfirm=要先去邮箱点确认链接
  */
