@@ -43,8 +43,9 @@ const CODE_TEXT = {
 	email_not_confirmed: '邮箱还没验证，去收件箱点一下确认链接',
 	weak_password: '密码太短，至少 6 位',
 	validation_failed: '填写的内容有误，检查一下邮箱和密码',
+	email_address_invalid: '这个邮箱地址收不了信，换一个真实的邮箱',
 	signups_disabled: '这个项目暂时没开放注册',
-	over_email_send_rate_limit: '邮件发得太快了，等一分钟再试',
+	over_email_send_rate_limit: '邮件发送太频繁了，过一会儿再试',
 	email_confirm_rate_limit: '确认邮件发得太快了，等一分钟再试',
 	over_request_rate_limit: '操作太频繁了，等一分钟再试',
 	rate_limit: '操作太频繁了，等一分钟再试'
@@ -56,11 +57,13 @@ const MSG_RULES = [
 	[/already registered|already exists|An account with this email/i, () => '这个邮箱已经注册过了，直接登录吧'],
 	[/Password should be at least\s*(\d+)/i, (m) => `密码太短，至少 ${m[1]} 位`],
 	[/Unable to validate email address/i, () => '邮箱格式看起来不对'],
+	[/email address .* is invalid/i, () => '这个邮箱地址收不了信，换一个真实的邮箱'],
 	[/Email (?:address )?not confirmed/i, () => '邮箱还没验证，去收件箱点一下确认链接'],
 	[/Could not find user/i, () => '没有这个邮箱对应的账号，先去注册一个'],
 	[/Signups? not allowed/i, () => '这个项目暂时没开放注册'],
 	[/For security purposes, you can only request this after/i, () => '操作太频繁了，等一会儿再试'],
-	[/rate limit|too many requests/i, () => '操作太频繁了，等一分钟再试'],
+	[/email rate limit|over_email_send_rate_limit/i, () => '邮件发送太频繁了，过一会儿再试'],
+	[/rate limit|too many requests/i, () => '操作太频繁了，等一会儿再试'],
 	[/smtp|failed to send (?:the )?email/i, () => '注册邮件发送失败，稍后再试一次'],
 	[/Failing to fetch|Network request failed|Network Error|networkerror|timeout|abort|ERR_/i, () => '网络好像不太行，检查一下再试']
 ]
