@@ -82,9 +82,29 @@ export function signUp(email, password) {
 	}).then((data) => {
 		// 开了邮箱确认时，signup 不返回 session，只返回 user
 		if (data && data.access_token) saveSession(data)
+		const user = (data && data.user) || null
+		if (user && user.id) {
+			// 顺手写一行到自己的 users 表（尽力而为：表还没建、或网络失败都不打断注册）
+			insertUserInfo(user, email, data && data.access_token).catch(() => {})
+		}
 		return { needConfirm: !(data && data.access_token), email }
 	}).catch((e) => {
 		throw new Error(humanError(e))
+	})
+}
+
+/** 往 public.users 写一行（表见仓库 README 里的建表 SQL）；失败静默，不影响注册/登录本身 */
+function insertUserInfo(user, email, accessToken) {
+	const token = accessToken || ''
+	if (!token) return Promise.resolve()
+	return request({
+		url: `${SUPABASE_URL}/rest/v1/users?on_conflict=user_id`,
+		method: 'POST',
+		header: apiHeaders({
+			Authorization: `Bearer ${token}`,
+			Prefer: 'resolution=merge-duplicates,return=minimal'
+		}),
+		data: [{ user_id: user.id, email }]
 	})
 }
 
@@ -96,7 +116,12 @@ export function signIn(email, password) {
 		method: 'POST',
 		header: apiHeaders(),
 		data: { email, password }
-	}).then((data) => saveSession(data)).catch((e) => {
+	}).then((data) => {
+		const s = saveSession(data)
+		// 登录时也补一次：老用户（建表之前注册的）登录后就能补上自己那行
+		if (s.user && s.user.id) insertUserInfo(s.user, email, s.accessToken).catch(() => {})
+		return s
+	}).catch((e) => {
 		throw new Error(humanError(e))
 	})
 }
