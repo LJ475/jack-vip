@@ -25,18 +25,78 @@ function apiHeaders(extra = {}) {
 	}
 }
 
-/** GoTrue 的英文报错翻成人话，翻不到就原样返回 */
+/**
+ * GoTrue 的报错翻成人话。
+ * 它的响应体实测长这样（四种都见过）：
+ *   {"code":400,"error_code":"invalid_credentials","msg":"Invalid login credentials"}
+ *   {"code":422,"error_code":"weak_password","msg":"Password should be at least 6 characters.","weak_password":{...}}
+ *   {"code":400,"error_code":"validation_failed","msg":"Unable to validate email address: invalid format"}
+ *   {"code":422,"error_code":"user_already_exists","msg":"User already registered"}
+ * 注意 code 是 HTTP 状态数字，真正的语义在 error_code + msg 上。
+ */
+const CODE_TEXT = {
+	invalid_credentials: '邮箱或密码不对',
+	user_already_exists: '这个邮箱已经注册过了，直接登录吧',
+	email_exists: '这个邮箱已经注册过了，直接登录吧',
+	user_not_found: '没有这个邮箱对应的账号，先去注册一个',
+	could_not_find_user: '没有这个邮箱对应的账号，先去注册一个',
+	email_not_confirmed: '邮箱还没验证，去收件箱点一下确认链接',
+	weak_password: '密码太短，至少 6 位',
+	validation_failed: '填写的内容有误，检查一下邮箱和密码',
+	signups_disabled: '这个项目暂时没开放注册',
+	over_email_send_rate_limit: '邮件发得太快了，等一分钟再试',
+	email_confirm_rate_limit: '确认邮件发得太快了，等一分钟再试',
+	over_request_rate_limit: '操作太频繁了，等一分钟再试',
+	rate_limit: '操作太频繁了，等一分钟再试'
+}
+
+/** 先按英文原句匹配（比错误码更具体），再按错误码兜底 */
+const MSG_RULES = [
+	[/Invalid login credentials/i, () => '邮箱或密码不对'],
+	[/already registered|already exists|An account with this email/i, () => '这个邮箱已经注册过了，直接登录吧'],
+	[/Password should be at least\s*(\d+)/i, (m) => `密码太短，至少 ${m[1]} 位`],
+	[/Unable to validate email address/i, () => '邮箱格式看起来不对'],
+	[/Email (?:address )?not confirmed/i, () => '邮箱还没验证，去收件箱点一下确认链接'],
+	[/Could not find user/i, () => '没有这个邮箱对应的账号，先去注册一个'],
+	[/Signups? not allowed/i, () => '这个项目暂时没开放注册'],
+	[/For security purposes, you can only request this after/i, () => '操作太频繁了，等一会儿再试'],
+	[/rate limit|too many requests/i, () => '操作太频繁了，等一分钟再试'],
+	[/smtp|failed to send (?:the )?email/i, () => '注册邮件发送失败，稍后再试一次'],
+	[/Failing to fetch|Network request failed|Network Error|networkerror|timeout|abort|ERR_/i, () => '网络好像不太行，检查一下再试']
+]
+
+/** 从异常里把响应体中的语义挑出来：请求封装非 2xx 时会把 body 挂在 err.data 上 */
+function readErr(e) {
+	const d = e && e.data
+	let msg = ''
+	let code = ''
+	let status = Number(e && e.statusCode) || 0
+	if (typeof d === 'string') {
+		msg = d
+	} else if (d && typeof d === 'object') {
+		code = String(d.error_code || (typeof d.code === 'string' ? d.code : '') || '')
+		msg = String(
+			d.msg || d.error_description || d.message ||
+			(d.error && (typeof d.error === 'string' ? d.error : d.error.msg || d.error.message)) || ''
+		)
+		if (!status) status = Number(d.code) || 0
+	}
+	if (!msg) msg = String((e && (e.message || e.errMsg || e.error_description)) || '')
+	if (!code && e && typeof e.code === 'string') code = e.code
+	return { msg, code, status }
+}
+
 function humanError(e) {
-	const raw = (e && (e.message || e.msg || e.error_description)) || ''
-	const m = String(raw)
-	if (/Invalid login credentials/i.test(m)) return '邮箱或密码不对'
-	if (/User already registered/i.test(m)) return '这个邮箱已经注册过了，直接登录吧'
-	if (/Password should be at least/i.test(m)) return '密码太短，至少 6 位'
-	if (/Unable to validate email address/i.test(m)) return '邮箱格式看起来不对'
-	if (/Email not confirmed/i.test(m)) return '邮箱还没验证，去收件箱点一下确认链接'
-	if (/over_email_send_rate_limit|For security purposes/i.test(m)) return '发送太频繁了，等一分钟再试'
-	if (/Failed to fetch|Network|timeout/i.test(m)) return '网络好像不太行，检查一下再试'
-	return m || '操作失败了，稍后再试'
+	const { msg, code, status } = readErr(e)
+	for (const [re, toText] of MSG_RULES) {
+		const m = re.exec(msg)
+		if (m) return toText(m)
+	}
+	if (code && CODE_TEXT[code]) return CODE_TEXT[code]
+	if (status === 401 || status === 403) return '邮箱或密码不对，或登录已过期，再试一次'
+	if (status >= 500) return 'Supabase 那边出错了，稍后再试'
+	// 实在认不出来的英文原样留着（比"请求失败（400）"有用），但没有就报状态
+	return msg || `操作没成功（${status || '未知'}），稍后再试`
 }
 
 function saveSession(data) {

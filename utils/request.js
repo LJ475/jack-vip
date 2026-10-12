@@ -34,9 +34,11 @@ export function request(options) {
 				if (res.statusCode >= 200 && res.statusCode < 300) {
 					resolve(res.data)
 				} else {
-					// statusCode 挂在错误对象上，供调用方区分 404（未上传/不存在）等场景
+					// statusCode 挂在错误对象上，供调用方区分 404（未上传/不存在）等场景；
+					// data 也要带上——像 Supabase 这种，人话写在响应体里，只留 statusCode 就只剩"请求失败（400）"
 					const err = new Error(`请求失败（${res.statusCode}）`)
 					err.statusCode = res.statusCode
+					err.data = res.data
 					reject(err)
 				}
 			},
