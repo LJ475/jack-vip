@@ -1,11 +1,11 @@
 <template>
 	<view class="au-page" :class="{ 'theme-thought': isThoughtTheme }">
-		<!-- 顶部人像区（照片由 /static/login-hero.png 提供，缺图时只是留一块渐变底） -->
+		<!-- 顶部人像区（照片 /static/login-hero.jpg；竖构图大头照，裁切位置见下面 .au-hero-img） -->
 		<view class="au-hero">
-			<image class="au-hero-img" src="/static/login-hero.png" mode="aspectFill" />
+			<image class="au-hero-img" src="/static/login-hero.jpg" mode="widthFix" />
 			<view class="au-hero-fade"></view>
 			<view class="au-back" @click="goBack">
-				<uni-icons type="left" size="22" color="#2b3a55" />
+				<uni-icons type="left" size="22" :color="isThoughtTheme ? '#E8E8EA' : '#2B3A55'" />
 			</view>
 			<view class="au-hello">
 				<text class="au-hello-text">你好，</text>
@@ -185,13 +185,17 @@ onLoad(() => {
 	.au-hero {
 		position: relative;
 		width: 100%;
-		height: 520rpx;
+		height: 620rpx;
 		overflow: hidden;
 	}
 
+	/* 照片是竖构图大头照：靠上对齐会把嘴切进淡出带里，所以整张往下推 150rpx，
+	   让 620rpx 这条带子刚好落在「额头—胸口」，淡出只吃衣服。换照片要重算这个偏移。 */
 	.au-hero-img {
+		position: absolute;
+		left: 0;
+		top: -150rpx;
 		width: 100%;
-		height: 100%;
 	}
 
 	.au-hero-fade {
@@ -199,7 +203,7 @@ onLoad(() => {
 		left: 0;
 		right: 0;
 		bottom: 0;
-		height: 180rpx;
+		height: 170rpx;
 		background: linear-gradient(180deg, rgba(248, 251, 255, 0) 0%, rgba(248, 251, 255, 0.85) 62%, #f8fbff 100%);
 	}
 
@@ -207,6 +211,7 @@ onLoad(() => {
 		background: linear-gradient(180deg, rgba(16, 16, 24, 0) 0%, rgba(16, 16, 24, 0.85) 62%, #101018 100%);
 	}
 
+	/* 返回箭头压在照片上，没有底就看不清：给一个半透明圆底，两种主题各一套 */
 	.au-back {
 		position: absolute;
 		left: 24rpx;
@@ -216,19 +221,25 @@ onLoad(() => {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.72);
+	}
+
+	.theme-thought .au-back {
+		background: rgba(16, 16, 24, 0.55);
 	}
 
 	.au-hello {
 		position: absolute;
 		left: 44rpx;
-		top: 130rpx;
+		bottom: 40rpx;
 	}
 
 	.au-hello-text {
 		display: block;
 		font-family: 'NailaoHand', 'PingFang SC', sans-serif;
 		font-size: calc(38rpx * var(--fs, 1));
-		color: #4a6fa5;
+		color: #2b3a55;
 		line-height: 1.35;
 	}
 
@@ -240,7 +251,7 @@ onLoad(() => {
 		width: 180rpx;
 		height: 4rpx;
 		border-radius: 999rpx;
-		background: rgba(74, 111, 165, 0.45);
+		background: rgba(43, 58, 85, 0.4);
 		margin-top: 12rpx;
 		transform: rotate(-2deg);
 	}
