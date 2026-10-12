@@ -1,86 +1,108 @@
 <template>
-	<view class="page">
-		<app-nav-bar title="注册" back-to="/pages/mine/index" />
+	<view class="au-page" :class="{ 'theme-thought': isThoughtTheme }">
+		<!-- 顶部人像区（照片由 /static/login-hero.png 提供，缺图时只是留一块渐变底） -->
+		<view class="au-hero">
+			<image class="au-hero-img" src="/static/login-hero.png" mode="aspectFill" />
+			<view class="au-hero-fade"></view>
+			<view class="au-back" @click="goBack">
+				<uni-icons type="left" size="22" color="#2b3a55" />
+			</view>
+			<view class="au-hello">
+				<text class="au-hello-text">你好，</text>
+				<text class="au-hello-text">很高兴见到你！</text>
+				<view class="au-hello-line"></view>
+			</view>
+		</view>
 
-		<view class="auth-card glassmorphism">
-			<view class="vibrancy-effect"></view>
+		<view class="au-body">
+			<view class="au-title">
+				<text class="au-title-a">开启</text>
+				<text class="au-title-b">6年之约</text>
+				<view class="au-title-mark"></view>
+			</view>
+			<text class="au-sub">注册账号，开启你的专属旅程</text>
 
-			<text class="auth-title">注册</text>
-			<text class="auth-sub">只要一个邮箱就行，用来登录和换手机时找回账号</text>
-
-			<view class="field glassmorphism glass-input" :class="{ 'field-focus': focus === 'email' }" @click.stop>
-				<view class="field-icon">
-					<uni-icons type="email" size="18" :color="focus === 'email' ? 'var(--brand)' : 'var(--text-aux)'" />
+			<view class="au-fields">
+				<view class="af" :class="{ 'af--focus': focus === 'email' }" @click.stop>
+					<view class="af-icon">
+						<uni-icons type="email" size="20" :color="focus === 'email' ? 'var(--brand)' : 'var(--text-weak)'" />
+					</view>
+					<input
+						class="af-input"
+						v-model="email"
+						type="text"
+						placeholder="请输入邮箱地址"
+						placeholder-class="ph"
+						:maxlength="64"
+						confirm-type="next"
+						@focus="focus = 'email'"
+						@blur="focus = ''"
+					/>
 				</view>
-				<input
-					class="field-input"
-					v-model="email"
-					type="text"
-					placeholder="邮箱"
-					placeholder-class="ph"
-					:maxlength="64"
-					confirm-type="next"
-					@focus="focus = 'email'"
-					@blur="focus = ''"
-				/>
+
+				<view class="af" :class="{ 'af--focus': focus === 'password' }" @click.stop>
+					<view class="af-icon">
+						<uni-icons type="locked" size="20" :color="focus === 'password' ? 'var(--brand)' : 'var(--text-weak)'" />
+					</view>
+					<input
+						class="af-input"
+						v-model="password"
+						:password="!showPwd"
+						placeholder="请设置密码（6-16 位，含字母或数字）"
+						placeholder-class="ph"
+						:maxlength="64"
+						confirm-type="next"
+						@focus="focus = 'password'"
+						@blur="focus = ''"
+					/>
+					<view class="af-eye" @click.stop="showPwd = !showPwd">
+						<uni-icons :type="showPwd ? 'eye-filled' : 'eye'" size="20" color="var(--text-weak)" />
+					</view>
+				</view>
+
+				<view class="af" :class="{ 'af--focus': focus === 'confirm' }" @click.stop>
+					<view class="af-icon">
+						<uni-icons type="locked" size="20" :color="focus === 'confirm' ? 'var(--brand)' : 'var(--text-weak)'" />
+					</view>
+					<input
+						class="af-input"
+						v-model="confirm"
+						:password="!showPwd"
+						placeholder="请再次输入密码"
+						placeholder-class="ph"
+						:maxlength="64"
+						confirm-type="done"
+						@focus="focus = 'confirm'"
+						@blur="focus = ''"
+						@confirm="onSubmit"
+					/>
+				</view>
 			</view>
 
-			<view class="field glassmorphism glass-input" :class="{ 'field-focus': focus === 'password' }" @click.stop>
-				<view class="field-icon">
-					<uni-icons type="locked" size="18" :color="focus === 'password' ? 'var(--brand)' : 'var(--text-aux)'" />
-				</view>
-				<input
-					class="field-input"
-					v-model="password"
-					:password="!showPwd"
-					placeholder="密码（至少 6 位）"
-					placeholder-class="ph"
-					:maxlength="64"
-					confirm-type="next"
-					@focus="focus = 'password'"
-					@blur="focus = ''"
-				/>
-				<view class="field-eye" @click.stop="showPwd = !showPwd">
-					<uni-icons :type="showPwd ? 'eye-filled' : 'eye'" size="18" color="var(--text-aux)" />
-				</view>
+			<text class="au-err" v-if="errText">{{ errText }}</text>
+			<text class="au-ok" v-if="okText">{{ okText }}</text>
+
+			<view class="au-btn" :class="{ 'au-btn--loading': loading }" @click="onSubmit">
+				<text class="au-btn-text">{{ loading ? '注册中…' : '注册' }}</text>
 			</view>
 
-			<view class="field glassmorphism glass-input" :class="{ 'field-focus': focus === 'confirm' }" @click.stop>
-				<view class="field-icon">
-					<uni-icons type="locked" size="18" :color="focus === 'confirm' ? 'var(--brand)' : 'var(--text-aux)'" />
-				</view>
-				<input
-					class="field-input"
-					v-model="confirm"
-					:password="!showPwd"
-					placeholder="再输一次密码"
-					placeholder-class="ph"
-					:maxlength="64"
-					confirm-type="done"
-					@focus="focus = 'confirm'"
-					@blur="focus = ''"
-					@confirm="onSubmit"
-				/>
+			<view class="au-switch" @click="goLogin">
+				<text class="au-switch-text">已有账号？</text>
+				<text class="au-link">立即登录</text>
+				<uni-icons type="right" size="14" color="var(--brand)" />
 			</view>
 
-			<text class="auth-err" v-if="errText">{{ errText }}</text>
-			<text class="auth-ok" v-if="okText">{{ okText }}</text>
-
-			<button class="btn btn-primary full-btn auth-btn" :disabled="loading" @click="onSubmit">
-				{{ loading ? '提交中…' : '注册' }}
-			</button>
-
-			<view class="auth-switch" @click="goLogin">
-				<text class="auth-switch-text">已经有账号了？</text>
-				<text class="auth-link">去登录</text>
-			</view>
+			<text class="au-foot">和更好的自己相遇</text>
 		</view>
 	</view>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
 import { signUp } from '@/utils/auth.js'
+import { CONTENT_MODE } from '@/api/shares.js'
+import { getAppMode } from '@/utils/app-mode.js'
 
 const email = ref('')
 const password = ref('')
@@ -90,9 +112,16 @@ const focus = ref('')
 const loading = ref(false)
 const errText = ref('')
 const okText = ref('')
+const isThoughtTheme = ref(false)
 
 function goLogin() {
 	uni.redirectTo({ url: '/pages/login/index' })
+}
+
+function goBack() {
+	const pages = getCurrentPages()
+	if (pages.length > 1) uni.navigateBack()
+	else uni.redirectTo({ url: '/pages/login/index' })
 }
 
 async function onSubmit() {
@@ -126,43 +155,167 @@ async function onSubmit() {
 		loading.value = false
 	}
 }
+
+onLoad(() => {
+	isThoughtTheme.value = getAppMode() === CONTENT_MODE.THOUGHT
+	// 手写字用本子那套奶酪体（文件在 static/fonts 里，没放就自动回落系统字体）
+	uni.loadFontFace({
+		family: 'NailaoHand',
+		source: 'url("/static/fonts/nailao.ttf")',
+		global: true
+	})
+})
 </script>
 
 <style scoped>
-	.auth-card {
-		padding: 44rpx 32rpx 36rpx;
-		border-radius: var(--radius-xl);
+	.au-page {
+		--au-bg: linear-gradient(180deg, #eaf2ff 0%, #f8fbff 45%, #ffffff 100%);
+		--au-card: #ffffff;
+		--au-ink: #1f2b45;
+		min-height: 100vh;
+		background: var(--au-bg);
 	}
 
-	.auth-title {
+	.au-page.theme-thought {
+		--au-bg: linear-gradient(180deg, #101018 0%, #0B0B0F 60%);
+		--au-card: #1A1A1F;
+		--au-ink: #E8E8EA;
+	}
+
+	.au-hero {
+		position: relative;
+		width: 100%;
+		height: 520rpx;
+		overflow: hidden;
+	}
+
+	.au-hero-img {
+		width: 100%;
+		height: 100%;
+	}
+
+	.au-hero-fade {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 180rpx;
+		background: linear-gradient(180deg, rgba(248, 251, 255, 0) 0%, rgba(248, 251, 255, 0.85) 62%, #f8fbff 100%);
+	}
+
+	.theme-thought .au-hero-fade {
+		background: linear-gradient(180deg, rgba(16, 16, 24, 0) 0%, rgba(16, 16, 24, 0.85) 62%, #101018 100%);
+	}
+
+	.au-back {
+		position: absolute;
+		left: 24rpx;
+		top: calc(var(--status-bar-height, 0px) + 16rpx);
+		width: 64rpx;
+		height: 64rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.au-hello {
+		position: absolute;
+		left: 44rpx;
+		top: 130rpx;
+	}
+
+	.au-hello-text {
 		display: block;
+		font-family: 'NailaoHand', 'PingFang SC', sans-serif;
 		font-size: calc(38rpx * var(--fs, 1));
-		font-weight: 600;
-		color: var(--text);
+		color: #4a6fa5;
+		line-height: 1.35;
 	}
 
-	.auth-sub {
+	.theme-thought .au-hello-text {
+		color: #8fa8cc;
+	}
+
+	.au-hello-line {
+		width: 180rpx;
+		height: 4rpx;
+		border-radius: 999rpx;
+		background: rgba(74, 111, 165, 0.45);
+		margin-top: 12rpx;
+		transform: rotate(-2deg);
+	}
+
+	.au-body {
+		padding: 8rpx 44rpx calc(env(safe-area-inset-bottom) + 40rpx);
+	}
+
+	.au-title {
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: flex-end;
+	}
+
+	.au-title-a {
+		font-size: 56rpx;
+		font-weight: 700;
+		color: var(--au-ink);
+		letter-spacing: 2rpx;
+	}
+
+	.au-title-b {
+		font-family: 'NailaoHand', 'PingFang SC', sans-serif;
+		font-size: 62rpx;
+		color: var(--brand);
+		margin-left: 16rpx;
+	}
+
+	.au-title-mark {
+		position: absolute;
+		left: 130rpx;
+		bottom: 2rpx;
+		width: 300rpx;
+		height: 6rpx;
+		border-radius: 999rpx;
+		background: var(--brand);
+		opacity: 0.55;
+		transform: rotate(-1.5deg);
+	}
+
+	.au-sub {
 		display: block;
-		margin-top: 10rpx;
 		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
-		line-height: 1.6;
+		margin-top: 14rpx;
 	}
 
-	.field {
+	.au-fields {
+		margin-top: 40rpx;
+	}
+
+	.af {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		width: 100%;
-		margin-top: 28rpx;
+		height: 104rpx;
+		background: var(--au-card);
+		border: 2rpx solid transparent;
+		border-radius: 999rpx;
+		padding: 0 30rpx;
+		margin-bottom: 22rpx;
+		box-shadow: 0 8rpx 26rpx rgba(31, 45, 61, 0.07);
 	}
 
-	.field-focus {
-		--glass-border: var(--focus-border);
-		--glass-bg: var(--focus-field-bg);
+	.theme-thought .af {
+		border-color: #2A2A32;
+		box-shadow: 0 8rpx 26rpx rgba(0, 0, 0, 0.3);
 	}
 
-	.field-icon {
+	.af--focus {
+		border-color: var(--brand);
+	}
+
+	.af-icon {
 		width: 44rpx;
 		display: flex;
 		align-items: center;
@@ -170,10 +323,10 @@ async function onSubmit() {
 		flex-shrink: 0;
 	}
 
-	.field-input {
+	.af-input {
 		flex: 1;
-		height: 60rpx;
-		margin-left: 12rpx;
+		height: 64rpx;
+		margin-left: 14rpx;
 		font-size: calc(28rpx * var(--fs, 1));
 		color: var(--text);
 		background: transparent;
@@ -181,7 +334,7 @@ async function onSubmit() {
 		padding: 0;
 	}
 
-	.field-eye {
+	.af-eye {
 		width: 56rpx;
 		height: 56rpx;
 		display: flex;
@@ -190,42 +343,69 @@ async function onSubmit() {
 		flex-shrink: 0;
 	}
 
-	.auth-err {
+	.au-err {
 		display: block;
-		margin-top: 20rpx;
 		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--danger);
 		line-height: 1.6;
+		margin: 4rpx 8rpx 0;
 	}
 
-	.auth-ok {
+	.au-ok {
 		display: block;
-		margin-top: 20rpx;
 		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--success);
 		line-height: 1.6;
+		margin: 4rpx 8rpx 0;
 	}
 
-	.auth-btn {
-		margin-top: 36rpx;
+	.au-btn {
+		height: 104rpx;
+		border-radius: 999rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-top: 32rpx;
+		background: linear-gradient(135deg, #5B9CFF 0%, #3A83F7 50%, #2E6BE6 100%);
+		box-shadow: 0 16rpx 36rpx rgba(58, 131, 247, 0.32);
 	}
 
-	.auth-switch {
-		margin-top: 28rpx;
+	.au-btn--loading {
+		opacity: 0.7;
+	}
+
+	.au-btn-text {
+		font-size: 32rpx;
+		font-weight: 600;
+		color: #ffffff;
+	}
+
+	.au-switch {
+		margin-top: 30rpx;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
 	}
 
-	.auth-switch-text {
+	.au-switch-text {
 		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--text-aux);
 	}
 
-	.auth-link {
+	.au-link {
 		font-size: calc(26rpx * var(--fs, 1));
 		color: var(--brand);
 		font-weight: 600;
+		margin: 0 4rpx;
+	}
+
+	.au-foot {
+		display: block;
+		text-align: center;
+		font-family: 'NailaoHand', 'PingFang SC', sans-serif;
+		font-size: calc(30rpx * var(--fs, 1));
+		color: #7fa0cc;
+		margin-top: 80rpx;
 	}
 </style>
