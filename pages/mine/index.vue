@@ -63,7 +63,7 @@
 			</view>
 		</view>
 
-		<!-- 设置与帮助：按他的要求只做占位，先不接跳转（点了没反应，等哪天点名再做真的） -->
+		<!-- 设置与帮助 -->
 		<view class="mp-card">
 			<text class="mp-card-title">设置与帮助</text>
 			<view class="mp-row" @click="onAccountTap">
@@ -78,11 +78,6 @@
 				<text class="mp-row-extra">{{ fsLabel }}</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
-			<view class="mp-row">
-				<uni-icons type="gear-filled" size="18" color="var(--text-secondary)" />
-				<text class="mp-row-title">通用设置</text>
-				<uni-icons type="right" size="12" color="var(--text-weak)" />
-			</view>
 			<view class="mp-row" @click="openHelp">
 				<uni-icons type="help-filled" size="18" color="var(--text-secondary)" />
 				<text class="mp-row-title">帮助与反馈</text>
@@ -93,6 +88,11 @@
 				<uni-icons type="info-filled" size="18" color="var(--text-secondary)" />
 				<text class="mp-row-title">关于我</text>
 				<text class="mp-row-extra">抖音二维码</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
+			<view class="mp-row" @click="confirmLogout">
+				<uni-icons type="gear-filled" size="18" color="var(--text-secondary)" />
+				<text class="mp-row-title">退出登录</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
 		</view>
@@ -213,10 +213,10 @@ function onFsSelect(i) {
 	uni.showToast({ title: `字号：${hit.label}`, icon: 'none' })
 }
 
-/** 账号：没登录就去登录页；已登录则确认后退出并回到登录页（现在没登录进不了 App） */
-function onAccountTap() {
+/** 退出登录：确认后清本机登录态并回登录页 */
+function confirmLogout() {
 	if (!accountEmail.value) {
-		uni.navigateTo({ url: '/pages/login/index' })
+		uni.showToast({ title: '当前没有登录账号', icon: 'none' })
 		return
 	}
 	uni.showModal({
@@ -232,6 +232,15 @@ function onAccountTap() {
 			})
 		}
 	})
+}
+
+/** 账号：没登录就去登录页；已登录则确认后退出并回到登录页（现在没登录进不了 App） */
+function onAccountTap() {
+	if (!accountEmail.value) {
+		uni.navigateTo({ url: '/pages/login/index' })
+		return
+	}
+	confirmLogout()
 }
 
 onShow(() => {
