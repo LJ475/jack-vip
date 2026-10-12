@@ -1,7 +1,7 @@
 <script>
 	import { applyLockScreenFlags } from './api/countdown.js'
 	import { resetAppMode } from './utils/app-mode.js'
-	import { getSession } from './utils/auth.js'
+	import { ensureSession } from './utils/auth.js'
 
 	export default {
 		onLaunch: function() {
@@ -12,9 +12,12 @@
 			uni.hideTabBar({ animation: false })
 			// 每次冷启动默认进入「图片分享」（蓝色主题）；模式仅在本次会话内跨页保持
 			resetAppMode()
-			// 没登录先挡在登录页：launch 阶段直接跳会被吞，放到下一个事件循环里
+			// 没登录先挡在登录页：launch 阶段直接跳会被吞，放到下一个事件循环里。
+			// ensureSession 会先拿 refresh_token 续一次，续上了就不打扰用户（不然 1 小时就被踢回登录页）
 			setTimeout(() => {
-				if (!getSession()) uni.reLaunch({ url: '/pages/login/index' })
+				ensureSession().then((s) => {
+					if (!s) uni.reLaunch({ url: '/pages/login/index' })
+				})
 			}, 0)
 		},
 		onShow: function() {

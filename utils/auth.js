@@ -63,6 +63,51 @@ export function getSession() {
 	return s
 }
 
+/** 不看有效期、原样读出本机存过的会话（只为拿 refresh_token 用） */
+function readStoredSession() {
+	try {
+		return uni.getStorageSync(SESSION_KEY) || null
+	} catch (e) {
+		return null
+	}
+}
+
+/**
+ * access_token 过期就用 refresh_token 续一次。
+ * 成功返回新会话；没有 refresh_token、或续期失败（被吊销/网络挂了）返回 null 并清掉本机登录态。
+ * 并发调用共用同一个在途请求，避免冷启动时 App.vue 和页面守卫各打一次。
+ */
+let refreshing = null
+export function refreshSession() {
+	const stored = readStoredSession()
+	if (!stored || !stored.refreshToken || !isConfigured()) return Promise.resolve(null)
+	if (refreshing) return refreshing
+	refreshing = request({
+		url: `${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,
+		method: 'POST',
+		header: apiHeaders({ Authorization: `Bearer ${SUPABASE_ANON_KEY}` }),
+		data: { refresh_token: stored.refreshToken }
+	}).then((data) => {
+		if (!data || !data.access_token) throw new Error('续期没返回 access_token')
+		return saveSession(data)
+	}).catch(() => {
+		try {
+			uni.removeStorageSync(SESSION_KEY)
+		} catch (e) /* 清不掉也不阻塞 */ { }
+		return null
+	}).finally(() => {
+		refreshing = null
+	})
+	return refreshing
+}
+
+/** 确保有可用登录态：没过期直接给，过期就先续一次；返回 null 才当"没登录" */
+export function ensureSession() {
+	const s = getSession()
+	if (s) return Promise.resolve(s)
+	return refreshSession()
+}
+
 export function currentUser() {
 	const s = getSession()
 	return s ? s.user : null
@@ -79,6 +124,13 @@ export function guardSession() {
 	const pages = getCurrentPages()
 	const route = pages.length ? (pages[pages.length - 1].route || '') : ''
 	if (route === 'pages/login/index' || route === 'pages/register/index') return false
+	// 过期不等于没登录：先拿 refresh_token 续一次，续上了就留在当前页，续不上才挡
+	if (readStoredSession() && readStoredSession().refreshToken) {
+		refreshSession().then((s) => {
+			if (!s) uni.reLaunch({ url: '/pages/login/index' })
+		})
+		return false
+	}
 	uni.reLaunch({ url: '/pages/login/index' })
 	return true
 }
