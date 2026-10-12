@@ -253,6 +253,43 @@ export function signIn(email, password) {
 	})
 }
 
+/**
+ * 重发注册确认码（GoTrue 的 resend 路由）。
+ * 60 秒冷却是服务端管的，超了会回 429，已被 humanError 翻成「操作太频繁了，等一分钟再试」。
+ */
+export function resendSignupOtp(email) {
+	if (!isConfigured()) return Promise.reject(new Error('还没配置 Supabase，先把 URL 和 anon key 填进 utils/auth.js'))
+	return request({
+		url: `${SUPABASE_URL}/auth/v1/resend`,
+		method: 'POST',
+		header: apiHeaders(),
+		data: { email, type: 'signup' }
+	}).catch((e) => {
+		throw new Error(humanError(e))
+	})
+}
+
+/**
+ * 用邮箱里那 6 位码确认注册。确认成功时 GoTrue 直接回登录态，省掉再登录一次。
+ * @returns {Promise<object>} 原样返回 GoTrue 的响应（含 user / 可能有 session）
+ */
+export function verifySignupCode(email, token) {
+	if (!isConfigured()) return Promise.reject(new Error('还没配置 Supabase，先把 URL 和 anon key 填进 utils/auth.js'))
+	return request({
+		url: `${SUPABASE_URL}/auth/v1/verify`,
+		method: 'POST',
+		header: apiHeaders(),
+		data: { type: 'signup', email, token: String(token || '').trim() }
+	}).then((data) => {
+		if (data && data.access_token) saveSession(data)
+		const user = (data && data.user) || null
+		if (user && user.id) insertUserInfo(user, email, data && data.access_token).catch(() => {})
+		return data
+	}).catch((e) => {
+		throw new Error(humanError(e))
+	})
+}
+
 /** 登出：先清本机，再尽力通知服务端（失败也算登出成功，不然用户会卡住） */
 export function signOut() {
 	const s = getSession()

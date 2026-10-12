@@ -17,9 +17,9 @@
 				<text class="au-title-b">6年之约</text>
 				<view class="au-title-mark"></view>
 			</view>
-			<text class="au-sub">注册账号，开启你的专属旅程</text>
+			<text class="au-sub">{{ step === 'code' ? '邮箱里那封邮件有 6 位验证码，填进来就能进' : '注册账号，开启你的专属旅程' }}</text>
 
-			<view class="au-fields">
+			<view class="au-fields" v-if="step === 'form'">
 				<view class="af" :class="{ 'af--focus': focus === 'email' }" @click.stop>
 					<view class="af-icon">
 						<uni-icons type="email" size="20" :color="focus === 'email' ? 'var(--brand)' : 'var(--text-weak)'" />
@@ -76,14 +76,42 @@
 				</view>
 			</view>
 
+			<!-- 第二步：邮箱里那 6 位码（注册时 GoTrue 已随确认邮件发出，模板里要有 {{ .Token }}） -->
+			<view class="au-fields" v-else>
+				<view class="af" :class="{ 'af--focus': focus === 'code' }" @click.stop>
+					<view class="af-icon">
+						<uni-icons type="auth" size="20" :color="focus === 'code' ? 'var(--brand)' : 'var(--text-weak)'" />
+					</view>
+					<input
+						class="af-input"
+						v-model="code"
+						type="number"
+						:maxlength="6"
+						placeholder="请输入 6 位验证码"
+						placeholder-class="ph"
+						:confirm-type="'done'"
+						@focus="focus = 'code'"
+						@blur="focus = ''"
+						@confirm="onVerify"
+					/>
+				</view>
+				<text class="au-mail">验证码已发到 {{ sentEmail }}</text>
+			</view>
+
 			<text class="au-err" v-if="errText">{{ errText }}</text>
 			<text class="au-ok" v-if="okText">{{ okText }}</text>
 
-			<view class="au-btn" :class="{ 'au-btn--loading': loading }" @click="onSubmit">
-				<text class="au-btn-text">{{ loading ? '注册中…' : '注册' }}</text>
+			<view class="au-btn" :class="{ 'au-btn--loading': loading }" @click="onPrimary">
+				<text class="au-btn-text">{{ btnText }}</text>
 			</view>
 
-			<view class="au-switch" @click="goLogin">
+			<view class="au-switch" v-if="step === 'code'" @click="onResend">
+				<text class="au-switch-text">{{ seconds > 0 ? seconds + ' 秒后可重新发送' : '没收到？重新发送验证码' }}</text>
+			</view>
+			<view class="au-switch au-switch--tight" v-if="step === 'code'" @click="backToForm">
+				<text class="au-link">邮箱填错了？改一下</text>
+			</view>
+			<view class="au-switch" v-else @click="goLogin">
 				<text class="au-switch-text">已有账号？</text>
 				<text class="au-link">立即登录</text>
 				<uni-icons type="right" size="14" color="var(--brand)" />
@@ -95,9 +123,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
-import { signUp } from '@/utils/auth.js'
+import { ref, computed } from 'vue'
+import { onLoad, onUnload } from '@dcloudio/uni-app'
+import { signUp, verifySignupCode, resendSignupOtp, getSession } from '@/utils/auth.js'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode } from '@/utils/app-mode.js'
 
@@ -111,11 +139,44 @@ const errText = ref('')
 const okText = ref('')
 const isThoughtTheme = ref(false)
 
-function goLogin() {
-	// 注册页是从登录页 push 进来的，退回去就行；直接输地址进来时栈里没上一页，才换成登录页
-	const pages = getCurrentPages()
-	if (pages.length > 1) uni.navigateBack()
-	else uni.redirectTo({ url: '/pages/login/index' })
+// form = 填邮箱密码；code = 填邮箱里那 6 位码
+const step = ref('form')
+const code = ref('')
+const sentEmail = ref('')
+const seconds = ref(0)
+let timer = null
+
+const btnText = computed(() => {
+	if (step.value === 'code') return loading.value ? '验证中…' : '验证并进入'
+	return loading.value ? '注册中…' : '注册'
+})
+
+function startCountdown(n) {
+	stopCountdown()
+	seconds.value = n
+	timer = setInterval(() => {
+		seconds.value -= 1
+		if (seconds.value <= 0) stopCountdown()
+	}, 1000)
+}
+
+function stopCountdown() {
+	if (timer) {
+		clearInterval(timer)
+		timer = null
+	}
+}
+
+function backToForm() {
+	step.value = 'form'
+	code.value = ''
+	errText.value = ''
+	okText.value = ''
+	stopCountdown()
+}
+
+function onPrimary() {
+	return step.value === 'code' ? onVerify() : onSubmit()
 }
 
 async function onSubmit() {
@@ -132,9 +193,12 @@ async function onSubmit() {
 	try {
 		const res = await signUp(mail, password.value)
 		if (res.needConfirm) {
-			// 项目开了邮箱确认：先去收件箱点链接，再回来登录
-			okText.value = `注册成功了。去 ${res.email} 收件箱点一下确认链接，然后回来登录`
-			uni.showToast({ title: '去邮箱点确认链接', icon: 'none' })
+			// 账号已建、邮箱没验：切到第二步，让用户把邮件里的 6 位码填进来
+			sentEmail.value = res.email
+			code.value = ''
+			step.value = 'code'
+			okText.value = '验证码已发送，去邮箱看一下'
+			startCountdown(60)
 		} else {
 			okText.value = '注册成功，已经帮你登录了'
 			uni.showToast({ title: '注册成功', icon: 'none' })
@@ -150,6 +214,51 @@ async function onSubmit() {
 	}
 }
 
+async function onVerify() {
+	if (loading.value) return
+	errText.value = ''
+	okText.value = ''
+	const c = code.value.trim()
+	if (!/^\d{6}$/.test(c)) { errText.value = '验证码是 6 位数字'; return }
+
+	loading.value = true
+	try {
+		await verifySignupCode(sentEmail.value, c)
+		if (getSession()) {
+			okText.value = '验证成功，正在进入'
+			setTimeout(() => uni.reLaunch({ url: '/pages/calendar/index' }), 600)
+		} else {
+			// 有的实例确认完不给登录态，那就回登录页用密码登一次
+			okText.value = '邮箱验证成功，请用密码登录'
+			stopCountdown()
+			setTimeout(() => uni.reLaunch({ url: '/pages/login/index' }), 1200)
+		}
+	} catch (e) {
+		errText.value = (e && e.message) || '验证失败'
+	} finally {
+		loading.value = false
+	}
+}
+
+async function onResend() {
+	if (seconds.value > 0 || loading.value) return
+	errText.value = ''
+	try {
+		await resendSignupOtp(sentEmail.value)
+		okText.value = '已重新发送，去邮箱看一下'
+		startCountdown(60)
+	} catch (e) {
+		errText.value = (e && e.message) || '发送失败'
+	}
+}
+
+function goLogin() {
+	// 注册页是从登录页 push 进来的，退回去就行；直接输地址进来时栈里没上一页，才换成登录页
+	const pages = getCurrentPages()
+	if (pages.length > 1) uni.navigateBack()
+	else uni.redirectTo({ url: '/pages/login/index' })
+}
+
 onLoad(() => {
 	isThoughtTheme.value = getAppMode() === CONTENT_MODE.THOUGHT
 	// 手写字用本子那套奶酪体（文件在 static/fonts 里，没放就自动回落系统字体）
@@ -159,6 +268,8 @@ onLoad(() => {
 		global: true
 	})
 })
+
+onUnload(stopCountdown)
 </script>
 
 <style scoped>
@@ -346,6 +457,13 @@ onLoad(() => {
 		margin: 4rpx 8rpx 0;
 	}
 
+	.au-mail {
+		display: block;
+		font-size: calc(22rpx * var(--fs, 1));
+		color: var(--text-aux);
+		margin: -6rpx 8rpx 0;
+	}
+
 	.au-btn {
 		height: 104rpx;
 		border-radius: 999rpx;
@@ -373,6 +491,10 @@ onLoad(() => {
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
+	}
+
+	.au-switch--tight {
+		margin-top: 10rpx;
 	}
 
 	.au-switch-text {
