@@ -124,7 +124,7 @@ onUnload(() => {
 		/* 亮色：米白纸张 + 浅灰行线 */
 		--nb-page-bg: linear-gradient(135deg, #edf4ff, #f8fbff);
 		--nb-paper: #FFFDF6;
-		--nb-line: rgba(23, 33, 58, 0.22);
+		--nb-line: rgba(23, 33, 58, 0.13);
 		--nb-ink: #333333;
 		--nb-ink-soft: #8994A9;
 		background: var(--nb-page-bg);
@@ -134,11 +134,11 @@ onUnload(() => {
 	   而这里的浅色底是 .notebook + scoped 属性（两级），不一起改的话暗色下纸是黑的、
 	   纸外面还是浅蓝，顶部日期也会变成浅字亮底看不见。 */
 	.notebook.theme-thought {
-		/* 暗色：墨黑纸 + 弱金行线，写在纸上的字用品牌主金（他要金色，不要近白） */
+		/* 暗色：墨黑纸 + 弱金行线，字回到近白（他曾要金色，现在改回之前的近白） */
 		--nb-page-bg: linear-gradient(180deg, #0C0C11 0%, #0B0B0F 100%);
 		--nb-paper: #101014;
-		--nb-line: rgba(232, 179, 65, 0.3);
-		--nb-ink: #E8B341;
+		--nb-line: rgba(232, 179, 65, 0.13);
+		--nb-ink: #E8E8EA;
 		--nb-ink-soft: #85858D;
 	}
 
@@ -198,8 +198,8 @@ onUnload(() => {
 		background-image: repeating-linear-gradient(
 			180deg,
 			transparent 0,
-			transparent 86rpx,
-			var(--nb-line) 86rpx,
+			transparent 87rpx,
+			var(--nb-line) 87rpx,
 			var(--nb-line) 88rpx
 		);
 		background-size: 100% 88rpx;
