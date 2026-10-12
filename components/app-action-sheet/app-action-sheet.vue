@@ -12,9 +12,9 @@
 				>
 					<text class="as-item-text" :class="{ 'as-item-text--danger': it.danger }">{{ it.label }}</text>
 				</view>
-			</view>
-			<view class="as-panel as-cancel" @click="close">
-				<text class="as-item-text">取消</text>
+				<view class="as-item" @click="close">
+					<text class="as-item-text as-item-text--aux">取消</text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -85,13 +85,14 @@ function pick(i) {
 	.as-title {
 		display: block;
 		text-align: center;
-		font-size: calc(22rpx * var(--fs, 1));
+		font-size: calc(26rpx * var(--fs, 1));
+		font-weight: 500;
 		color: var(--text-aux);
-		padding: 24rpx 0 4rpx;
+		padding: 30rpx 0 10rpx;
 	}
 
 	.as-item {
-		padding: 30rpx 0;
+		padding: 28rpx 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -106,11 +107,11 @@ function pick(i) {
 		color: var(--text);
 	}
 
-	.as-item-text--danger {
-		color: var(--danger);
+	.as-item-text--aux {
+		color: var(--text-aux);
 	}
 
-	.as-cancel {
-		margin-top: 16rpx;
+	.as-item-text--danger {
+		color: var(--danger);
 	}
 </style>
