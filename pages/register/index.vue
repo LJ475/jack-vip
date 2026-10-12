@@ -4,9 +4,6 @@
 		<view class="au-hero">
 			<image class="au-hero-img" src="/static/login-hero.jpg" mode="widthFix" />
 			<view class="au-hero-fade"></view>
-			<view class="au-back" @click="goBack">
-				<uni-icons type="left" size="22" :color="isThoughtTheme ? '#E8E8EA' : '#2B3A55'" />
-			</view>
 			<view class="au-hello">
 				<text class="au-hello-text">你好，</text>
 				<text class="au-hello-text">很高兴见到你！</text>
@@ -115,10 +112,7 @@ const okText = ref('')
 const isThoughtTheme = ref(false)
 
 function goLogin() {
-	uni.redirectTo({ url: '/pages/login/index' })
-}
-
-function goBack() {
+	// 注册页是从登录页 push 进来的，退回去就行；直接输地址进来时栈里没上一页，才换成登录页
 	const pages = getCurrentPages()
 	if (pages.length > 1) uni.navigateBack()
 	else uni.redirectTo({ url: '/pages/login/index' })
@@ -209,24 +203,6 @@ onLoad(() => {
 
 	.theme-thought .au-hero-fade {
 		background: linear-gradient(180deg, rgba(16, 16, 24, 0) 0%, rgba(16, 16, 24, 0.85) 62%, #101018 100%);
-	}
-
-	/* 返回箭头压在照片上，没有底就看不清：给一个半透明圆底，两种主题各一套 */
-	.au-back {
-		position: absolute;
-		left: 24rpx;
-		top: calc(var(--status-bar-height, 0px) + 16rpx);
-		width: 64rpx;
-		height: 64rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 999rpx;
-		background: rgba(255, 255, 255, 0.72);
-	}
-
-	.theme-thought .au-back {
-		background: rgba(16, 16, 24, 0.55);
 	}
 
 	.au-hello {

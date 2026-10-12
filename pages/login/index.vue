@@ -92,7 +92,8 @@ const errText = ref('')
 const isThoughtTheme = ref(false)
 
 function goRegister() {
-	uni.redirectTo({ url: '/pages/register/index' })
+	// push 而不是 redirect：注册页要能返回登录页（返回键/侧滑/底部那行），换过去会把登录页从栈里吃掉
+	uni.navigateTo({ url: '/pages/register/index' })
 }
 
 async function onSubmit() {
