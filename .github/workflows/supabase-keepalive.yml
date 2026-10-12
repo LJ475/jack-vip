@@ -1,0 +1,29 @@
+# Supabase 免费项目保活：7 天没有任何 API 请求就会被暂停（浏览控制台不算活动），
+# 所以这里每 2 天发一个最小的 REST 请求，把计时器清零。
+#
+# ⚠️ 这里放的必须是 anon key（设计上就是给客户端用的公开钥匙）。
+#    service_role key 绝对不能出现在公开仓库里。
+name: supabase-keepalive
+
+on:
+  schedule:
+    # 每 2 天 01:00 UTC（北京时间 09:00）跑一次；官方是 7 天，留足余量，
+    # 偶发一两次失败也不会被暂停
+    - cron: '0 1 */2 * *'
+  workflow_dispatch: {}   # 也支持在仓库页面手动点一次
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST
+        run: |
+          URL="https://tyqkjurbikcdtozuawrz.supabase.co/rest/v1/contributors?select=id&limit=1"
+          KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5cWtqdXJiaWtjZHRvenVhd3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NDE0NTMsImV4cCI6MjEwNzMxNzQ1M30.cCv010tSxOL_gMOp0nK2BV2HUJt2oZ2g3Sl_ngm4LAk"
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" -H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+          echo "HTTP $CODE"
+          # 404（表还没建）也算"请求打通了"，一样能重置计时器；只有连不上才算失败
+          case "$CODE" in
+            2*|4*) echo "已保活";;
+            *) echo "请求没成功：$CODE"; exit 1;;
+          esac
