@@ -12,9 +12,6 @@
 				>
 					<text class="as-item-text" :class="{ 'as-item-text--danger': it.danger }">{{ it.label }}</text>
 				</view>
-				<view class="as-item" @click="close">
-					<text class="as-item-text as-item-text--aux">取消</text>
-				</view>
 			</view>
 		</view>
 	</view>
@@ -105,10 +102,6 @@ function pick(i) {
 	.as-item-text {
 		font-size: 30rpx;
 		color: var(--text);
-	}
-
-	.as-item-text--aux {
-		color: var(--text-aux);
 	}
 
 	.as-item-text--danger {
