@@ -1,6 +1,5 @@
 <script>
 	import { applyLockScreenFlags } from './api/countdown.js'
-	import { scheduleDailyReminders } from './api/daily-reminder.js'
 	import { resetAppMode } from './utils/app-mode.js'
 	import { getSession } from './utils/auth.js'
 
@@ -22,8 +21,6 @@
 			console.log('App Show')
 			// 锁屏亮屏 flag 在进程被杀、系统重建 Activity 后会丢失，每次回前台补设
 			applyLockScreenFlags()
-			// 每日更新提醒的本地通知按条调度，回前台时检查覆盖情况自动续期
-			scheduleDailyReminders()
 		},
 		onHide: function() {
 			console.log('App Hide')

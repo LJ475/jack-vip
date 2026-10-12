@@ -41,28 +41,6 @@
 				<button class="btn btn-primary full-btn ab-save-btn" @click="saveQr(MY_QR)">保存到相册</button>
 			</view>
 
-			<!-- 每日更新提醒（仅 App 端；本地通知不支持按日重复，靠打开 App 自动续期） -->
-			<!-- #ifdef APP-PLUS -->
-			<view class="ab-card">
-				<view class="ab-row-head">
-					<uni-icons type="notification" size="15" color="var(--brand)" />
-					<text class="ab-row-head-text">每日更新提醒</text>
-				</view>
-				<view class="ab-row">
-					<text class="ab-row-label">每天提醒我来看新分享</text>
-					<switch class="ab-row-switch" :checked="reminderOn" color="var(--brand)" @change="onReminderToggle" />
-				</view>
-				<picker mode="time" :value="reminderTime" :disabled="!reminderOn" @change="onReminderTimeChange">
-					<view class="ab-row ab-row-time">
-						<text class="ab-row-label">提醒时间</text>
-						<text class="ab-row-time-text" :class="{ 'ab-row-time-off': !reminderOn }">{{ reminderTime }}</text>
-						<uni-icons type="right" size="14" color="var(--text-weak)" />
-					</view>
-				</picker>
-				<text class="ab-row-tip">通过系统通知提醒，需允许本应用的通知权限；保持每天打开一次 App 提醒就不会断</text>
-			</view>
-			<!-- #endif -->
-
 			<text class="ab-foot">感谢每一个支持我的你</text>
 		</template>
 
@@ -134,14 +112,6 @@ import { saveImageToAlbum } from '@/utils/save-image.js'
 import { CONTENT_MODE } from '@/api/shares.js'
 import { getAppMode, syncStatusBarTheme, syncRootTheme } from '@/utils/app-mode.js'
 import { fsVar, refreshFontScale } from '@/utils/font-scale.js'
-import {
-	isReminderEnabled,
-	setReminderEnabled,
-	getReminderTime,
-	setReminderTime,
-	scheduleDailyReminders,
-	cancelReminderMessages
-} from '@/api/daily-reminder.js'
 
 const MY_QR = '/static/douyin-qr.jpg'
 
@@ -201,41 +171,11 @@ function saveQr(path) {
 	saveImageToAlbum(path).catch(() => { /* 提示已在工具内给出 */ })
 }
 
-/* ==================== 每日更新提醒 ==================== */
-
-const reminderOn = ref(false)
-const reminderTime = ref('20:00')
-
-function onReminderToggle(e) {
-	const on = !!(e && e.detail && e.detail.value)
-	setReminderEnabled(on)
-	reminderOn.value = on
-	if (on) {
-		scheduleDailyReminders(true)
-		uni.showToast({ title: `每天 ${reminderTime.value} 提醒你`, icon: 'none' })
-	} else {
-		cancelReminderMessages()
-	}
-}
-
-function onReminderTimeChange(e) {
-	const t = (e && e.detail && e.detail.value) || ''
-	if (!/^\d{2}:\d{2}$/.test(t)) return
-	setReminderTime(t)
-	reminderTime.value = t
-	if (reminderOn.value) {
-		scheduleDailyReminders(true)
-		uni.showToast({ title: `已改为每天 ${t} 提醒`, icon: 'none' })
-	}
-}
-
 onShow(() => {
 	themeMode.value = getAppMode()
 	syncStatusBarTheme(themeMode.value)
 	syncRootTheme(themeMode.value)
 	refreshFontScale()
-	reminderOn.value = isReminderEnabled()
-	reminderTime.value = getReminderTime()
 })
 </script>
 
@@ -381,65 +321,6 @@ onShow(() => {
 
 	.ab-save-btn {
 		margin-top: 22rpx;
-	}
-
-	/* ===== 通用卡片 / 行 ===== */
-	.ab-card {
-		margin-top: 24rpx;
-		background: var(--ab-card);
-		border: 1rpx solid var(--ab-card-border);
-		border-radius: 32rpx;
-		padding: 26rpx 28rpx;
-		box-shadow: 0 10rpx 30rpx rgba(31, 45, 61, 0.08);
-	}
-
-	.theme-thought .ab-card {
-		box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.32);
-	}
-
-	.ab-row-head {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		margin-bottom: 6rpx;
-	}
-
-	.ab-row-head-text {
-		font-size: 28rpx;
-		font-weight: 600;
-		color: var(--text);
-		margin-left: 10rpx;
-	}
-
-	.ab-row {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		padding: 20rpx 0;
-	}
-
-	.ab-row-label {
-		font-size: calc(26rpx * var(--fs, 1));
-		color: var(--text);
-		flex: 1;
-	}
-
-	.ab-row-time-text {
-		font-size: calc(26rpx * var(--fs, 1));
-		color: var(--brand);
-		margin-right: 8rpx;
-	}
-
-	.ab-row-time-off {
-		color: var(--text-weak);
-	}
-
-	.ab-row-tip {
-		display: block;
-		font-size: calc(20rpx * var(--fs, 1));
-		color: var(--text-weak);
-		line-height: 1.6;
 	}
 
 	/* ===== 支持记录 ===== */
