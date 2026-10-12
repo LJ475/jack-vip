@@ -22,7 +22,7 @@
 			</swiper-item>
 		</swiper>
 
-		<text class="viewer-hint">左右滑动看前后几天 · 长按图片保存到相册</text>
+		<text class="viewer-hint">{{ hint }}</text>
 	</view>
 </template>
 
@@ -33,7 +33,10 @@ import { saveImageToAlbum } from '@/utils/save-image.js'
 const props = defineProps({
 	visible: { type: Boolean, default: false },
 	items: { type: Array, default: () => [] },
-	index: { type: Number, default: 0 }
+	index: { type: Number, default: 0 },
+	/** 顶部那行字；不传就显示当前这张图的日期（日历那种按天的） */
+	title: { type: String, default: '' },
+	hint: { type: String, default: '左右滑动看前后几天 · 长按图片保存到相册' }
 })
 
 const emit = defineEmits(['close'])
@@ -45,8 +48,9 @@ watch(() => props.index, (v) => { cur.value = v || 0; shown.value = v || 0 })
 
 const current = computed(() => props.items[cur.value] || null)
 
-/** 顶部日期：跟随当前这张图，格式与详情弹层一致 */
+/** 顶部那行：传了 title 用它，否则跟随当前这张图的日期 */
 const dateText = computed(() => {
+	if (props.title) return props.title
 	const it = current.value
 	if (!it) return ''
 	const date = it.share_date || ''

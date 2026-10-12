@@ -34,7 +34,7 @@
 				</view>
 				<text class="ab-dy-sub">记录生活中的美好瞬间</text>
 				<text class="ab-dy-sub">感谢每一个喜欢我作品的你</text>
-				<view class="ab-qr-wrap" @click="previewQr(MY_QR)">
+				<view class="ab-qr-wrap" @click="previewQr(MY_QR, '抖音二维码')">
 					<image class="ab-qr" :src="MY_QR" mode="widthFix" />
 				</view>
 				<text class="ab-dy-hint">点二维码放大 · 保存后可到抖音「扫一扫」从相册识别</text>
@@ -105,7 +105,7 @@
 			</view>
 
 			<template v-if="selectedContributor && selectedContributor.qr_url">
-				<view class="ab-qr-wrap ab-qr-wrap--contrib" @click="previewQr(selectedContributor.qr_url)">
+				<view class="ab-qr-wrap ab-qr-wrap--contrib" @click="previewQr(selectedContributor.qr_url, selectedContributor.name)">
 					<image class="ab-qr" :src="selectedContributor.qr_url" mode="widthFix" />
 				</view>
 				<button class="btn btn-primary full-btn ab-save-btn" @click="saveQr(selectedContributor.qr_url)">保存到相册</button>
@@ -114,6 +114,15 @@
 			<text class="ab-contrib-note">本应用内容均由以上博主免费分享，感谢他们的辛勤产出与无私分享</text>
 			<text class="ab-foot">感谢一路有你</text>
 		</template>
+
+		<!-- 二维码放大走站内统一的页内灯箱：uni.previewImage 在 H5 里点了不弹（回 success 但什么都不画） -->
+		<image-viewer
+			:visible="viewerVisible"
+			:items="viewerItems"
+			:title="viewerTitle"
+			hint="长按图片保存到相册"
+			@close="viewerVisible = false"
+		/>
 	</view>
 </template>
 
@@ -147,6 +156,10 @@ const contributorsLoading = ref(false)
 const contributorsError = ref(false)
 const selectedId = ref(null)
 
+const viewerVisible = ref(false)
+const viewerItems = ref([])
+const viewerTitle = ref('')
+
 const selectedContributor = computed(
 	() => contributors.value.find((c) => c.id === selectedId.value) || null
 )
@@ -176,9 +189,11 @@ function selectContributor(c) {
 	selectedId.value = c.id
 }
 
-function previewQr(path) {
+function previewQr(path, title) {
 	if (!path) return
-	uni.previewImage({ urls: [path], current: path })
+	viewerItems.value = [{ image_url: path }]
+	viewerTitle.value = title || ''
+	viewerVisible.value = true
 }
 
 function saveQr(path) {
