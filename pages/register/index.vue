@@ -116,9 +116,8 @@ async function onSubmit() {
 			okText.value = '注册成功，已经帮你登录了'
 			uni.showToast({ title: '注册成功', icon: 'none' })
 			setTimeout(() => {
-				const pages = getCurrentPages()
-				if (pages.length > 1) uni.navigateBack()
-				else uni.switchTab({ url: '/pages/mine/index' })
+				// 注册即登录（项目关掉了邮箱确认）→ 直接回首页
+				uni.reLaunch({ url: '/pages/calendar/index' })
 			}, 700)
 		}
 	} catch (e) {

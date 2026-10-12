@@ -66,6 +66,12 @@
 		<!-- 设置与帮助：按他的要求只做占位，先不接跳转（点了没反应，等哪天点名再做真的） -->
 		<view class="mp-card">
 			<text class="mp-card-title">设置与帮助</text>
+			<view class="mp-row" @click="onAccountTap">
+				<uni-icons type="person-filled" size="18" color="var(--text-secondary)" />
+				<text class="mp-row-title">账号</text>
+				<text class="mp-row-extra">{{ accountEmail || '未登录' }}</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
 			<view class="mp-row" @click="chooseFontScale">
 				<text class="mp-row-aa">Aa</text>
 				<text class="mp-row-title">字体大小</text>
@@ -116,12 +122,14 @@ import { getAppMode, syncStatusBarTheme, syncRootTheme, hideNativeTabBar } from 
 import { fsVar, refreshFontScale, SCALES, setFontScaleKey, fontScaleLabel } from '@/utils/font-scale.js'
 import { getAllNotes, calcStreak } from '@/utils/thought-notes.js'
 import { listTimers, TIMER_STATUS } from '@/api/countdown.js'
+import { currentUser, signOut } from '@/utils/auth.js'
 
 const themeMode = ref(getAppMode())
 const isThoughtTheme = computed(() => themeMode.value === CONTENT_MODE.THOUGHT)
 
 const backupVisible = ref(false)
 const deviceNo = ref('')
+const accountEmail = ref('')
 const counted = ref({ checkins: 0, streak: 0, notes: 0, done: 0 })
 
 /** 四个数字都从本机数据现算：打卡总天数 / 连续记录天数 / 本子篇数 / 完成的倒计时数 */
@@ -205,6 +213,27 @@ function onFsSelect(i) {
 	uni.showToast({ title: `字号：${hit.label}`, icon: 'none' })
 }
 
+/** 账号：没登录就去登录页；已登录则确认后退出并回到登录页（现在没登录进不了 App） */
+function onAccountTap() {
+	if (!accountEmail.value) {
+		uni.navigateTo({ url: '/pages/login/index' })
+		return
+	}
+	uni.showModal({
+		title: '退出登录',
+		content: `当前账号：${accountEmail.value}`,
+		confirmText: '退出',
+		confirmColor: '#FF5F6D',
+		success: (res) => {
+			if (!res.confirm) return
+			signOut().then(() => {
+				accountEmail.value = ''
+				uni.reLaunch({ url: '/pages/login/index' })
+			})
+		}
+	})
+}
+
 onShow(() => {
 	hideNativeTabBar()
 	themeMode.value = getAppMode()
@@ -213,6 +242,9 @@ onShow(() => {
 	refreshFontScale()
 	deviceNo.value = ensureDeviceNo()
 	refreshCounts()
+	// 从登录页回来时要立刻反映登录态
+	const u = currentUser()
+	accountEmail.value = (u && u.email) || ''
 })
 </script>
 

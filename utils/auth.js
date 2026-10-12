@@ -8,8 +8,8 @@ import { request } from './request.js'
  *   - SUPABASE_ANON_KEY  那串很长的 anon public key（设计上就是给客户端用的）
  * 没填的话，注册/登录会直接提示"还没配置"，不会假装成功。
  */
-export const SUPABASE_URL = ''
-export const SUPABASE_ANON_KEY = ''
+export const SUPABASE_URL = 'https://tyqkjurbikcdtozuawrz.supabase.co'
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5cWtqdXJiaWtjZHRvenVhd3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NDE0NTMsImV4cCI6MjEwNzMxNzQ1M30.cCv010tSxOL_gMOp0nK2BV2HUJt2oZ2g3Sl_ngm4LAk'
 
 const SESSION_KEY = 'supabaseSession'
 

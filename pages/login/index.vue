@@ -88,9 +88,8 @@ async function onSubmit() {
 		const u = currentUser()
 		uni.showToast({ title: u && u.email ? `已登录 ${u.email}` : '登录成功', icon: 'none' })
 		setTimeout(() => {
-			const pages = getCurrentPages()
-			if (pages.length > 1) uni.navigateBack()
-			else uni.switchTab({ url: '/pages/mine/index' })
+			// 登录后统一回到首页 tab：守卫是 reLaunch 过来的，栈里没有"上一页"可退
+			uni.reLaunch({ url: '/pages/calendar/index' })
 		}, 600)
 	} catch (e) {
 		errText.value = (e && e.message) || '登录失败'

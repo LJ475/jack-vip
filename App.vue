@@ -2,6 +2,7 @@
 	import { applyLockScreenFlags } from './api/countdown.js'
 	import { scheduleDailyReminders } from './api/daily-reminder.js'
 	import { resetAppMode } from './utils/app-mode.js'
+	import { getSession } from './utils/auth.js'
 
 	export default {
 		onLaunch: function() {
@@ -12,6 +13,10 @@
 			uni.hideTabBar({ animation: false })
 			// 每次冷启动默认进入「图片分享」（蓝色主题）；模式仅在本次会话内跨页保持
 			resetAppMode()
+			// 没登录先挡在登录页：launch 阶段直接跳会被吞，放到下一个事件循环里
+			setTimeout(() => {
+				if (!getSession()) uni.reLaunch({ url: '/pages/login/index' })
+			}, 0)
 		},
 		onShow: function() {
 			console.log('App Show')
