@@ -91,7 +91,7 @@
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
 			<view class="mp-row" @click="confirmLogout">
-				<uni-icons type="gear-filled" size="18" color="var(--text-secondary)" />
+				<uni-icons type="closeempty" size="18" color="var(--text-secondary)" />
 				<text class="mp-row-title">退出登录</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
