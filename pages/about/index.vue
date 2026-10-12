@@ -18,8 +18,6 @@
 		<!-- ===== 关于我 ===== -->
 		<template v-if="tab === 'me'">
 			<view class="ab-hero">
-				<image class="ab-avatar" src="/static/logo.png" mode="aspectFill" />
-				<text class="ab-name">jack会员分享</text>
 				<text class="ab-slogan">每天一张值得收藏的分享图</text>
 				<view class="ab-divider">
 					<view class="ab-line"></view>
@@ -289,26 +287,6 @@ onShow(() => {
 		flex-direction: column;
 		align-items: center;
 		padding: 12rpx 0 30rpx;
-	}
-
-	.ab-avatar {
-		width: 168rpx;
-		height: 168rpx;
-		border-radius: 50%;
-		border: 6rpx solid #ffffff;
-		box-shadow: 0 12rpx 32rpx rgba(31, 45, 61, 0.14);
-		background: #ffffff;
-	}
-
-	.theme-thought .ab-avatar {
-		border-color: #2A2A32;
-	}
-
-	.ab-name {
-		font-size: 40rpx;
-		font-weight: 700;
-		color: var(--text);
-		margin-top: 22rpx;
 	}
 
 	.ab-slogan {

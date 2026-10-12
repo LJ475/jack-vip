@@ -66,12 +66,6 @@
 		<!-- 设置与帮助 -->
 		<view class="mp-card">
 			<text class="mp-card-title">设置与帮助</text>
-			<view class="mp-row" @click="onAccountTap">
-				<uni-icons type="person-filled" size="18" color="var(--text-secondary)" />
-				<text class="mp-row-title">账号</text>
-				<text class="mp-row-extra">{{ accountEmail || '未登录' }}</text>
-				<uni-icons type="right" size="12" color="var(--text-weak)" />
-			</view>
 			<view class="mp-row" @click="chooseFontScale">
 				<text class="mp-row-aa">Aa</text>
 				<text class="mp-row-title">字体大小</text>
@@ -232,15 +226,6 @@ function confirmLogout() {
 			})
 		}
 	})
-}
-
-/** 账号：没登录就去登录页；已登录则确认后退出并回到登录页（现在没登录进不了 App） */
-function onAccountTap() {
-	if (!accountEmail.value) {
-		uni.navigateTo({ url: '/pages/login/index' })
-		return
-	}
-	confirmLogout()
 }
 
 onShow(() => {
