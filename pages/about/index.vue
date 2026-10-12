@@ -10,7 +10,7 @@
 					<text class="ab-seg-text">关于我</text>
 				</view>
 				<view class="ab-seg-item" :class="{ active: tab === 'thanks' }" @click="switchTab('thanks')">
-					<text class="ab-seg-text">支持记录</text>
+					<text class="ab-seg-text">感谢</text>
 				</view>
 			</view>
 		</view>
@@ -44,10 +44,10 @@
 			<text class="ab-foot">感谢每一个支持我的你</text>
 		</template>
 
-		<!-- ===== 支持记录 ===== -->
+		<!-- ===== 感谢 ===== -->
 		<template v-else>
 			<view class="ab-rec-head">
-				<text class="ab-rec-title">支持记录</text>
+				<text class="ab-rec-title">感谢</text>
 				<text class="ab-rec-sub">感谢每一位陪伴我的朋友</text>
 				<text class="ab-rec-sub">因为有你们，才有我持续分享的动力</text>
 			</view>
@@ -73,13 +73,6 @@
 					<text class="ab-contrib-name">{{ c.name }}</text>
 					<text class="ab-contrib-tip">{{ c.id === selectedId ? '已选中 · 二维码在下方' : '点一下看 TA 的抖音二维码' }}</text>
 				</view>
-				<image
-					class="ab-contrib-qr"
-					:class="{ 'ab-contrib-qr--on': c.id === selectedId }"
-					:src="c.qr_url"
-					mode="aspectFill"
-					v-if="c.qr_url"
-				/>
 			</view>
 
 			<template v-if="selectedContributor && selectedContributor.qr_url">
@@ -303,7 +296,7 @@ onShow(() => {
 		margin-top: 22rpx;
 	}
 
-	/* ===== 支持记录 ===== */
+	/* ===== 感谢 ===== */
 	.ab-rec-head {
 		padding: 6rpx 6rpx 22rpx;
 	}
@@ -388,20 +381,6 @@ onShow(() => {
 		font-size: calc(20rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-top: 8rpx;
-	}
-
-	.ab-contrib-qr {
-		width: 96rpx;
-		height: 96rpx;
-		border-radius: 16rpx;
-		flex-shrink: 0;
-		background: #ffffff;
-		opacity: 0.55;
-	}
-
-	.ab-contrib-qr--on {
-		opacity: 1;
-		border: 2rpx solid var(--brand);
 	}
 
 	.ab-qr-wrap--contrib {
