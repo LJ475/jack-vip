@@ -110,17 +110,22 @@ function saveImage() {
 		right: 0;
 		bottom: 0;
 		z-index: 1000;
-		max-height: 85vh;
+		/* 高度用 --vh（H5 的真实可视高度，修地址栏收放时 100vh 偏大；App 端回落 1vh） */
+		max-height: calc(var(--vh, 1vh) * 85);
 		padding: 0 24rpx calc(24rpx + env(safe-area-inset-bottom));
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
+		/* 宽屏下跟着内容列收窄居中 */
+		max-width: var(--adapt-content-max, 560px);
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.sheet-inner {
 		display: flex;
 		flex-direction: column;
-		max-height: calc(85vh - 24rpx - env(safe-area-inset-bottom));
+		max-height: calc(var(--vh, 1vh) * 85 - 24rpx - env(safe-area-inset-bottom));
 		animation: sheet-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 	}
 
@@ -149,7 +154,7 @@ function saveImage() {
 
 	.sheet-body {
 		flex: 1;
-		max-height: 60vh;
+		max-height: calc(var(--vh, 1vh) * 60);
 		position: relative;
 		z-index: 1;
 	}

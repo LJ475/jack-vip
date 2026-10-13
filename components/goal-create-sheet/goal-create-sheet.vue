@@ -226,11 +226,16 @@ function confirm() {
 		right: 0;
 		bottom: 0;
 		z-index: 1000;
-		max-height: 85vh;
+		/* 高度用 --vh（H5 的真实可视高度；App 端回落 1vh = 原行为） */
+		max-height: calc(var(--vh, 1vh) * 85);
 		padding: 0 24rpx calc(24rpx + env(safe-area-inset-bottom));
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
+		/* 宽屏下跟着内容列收窄居中 */
+		max-width: var(--adapt-content-max, 560px);
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.sheet-inner {

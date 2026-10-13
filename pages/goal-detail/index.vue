@@ -1426,6 +1426,10 @@ function saveAmount() {
 		z-index: 1000;
 		padding: 0 24rpx calc(24rpx + env(safe-area-inset-bottom));
 		box-sizing: border-box;
+		/* 宽屏下跟着内容列收窄居中 */
+		max-width: var(--adapt-content-max, 560px);
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.sheet-inner {

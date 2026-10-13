@@ -63,6 +63,11 @@ export default {
 		bottom: 0;
 		z-index: 900;
 		padding: 0 24rpx calc(env(safe-area-inset-bottom) + 20rpx);
+		/* 宽屏（平板 / 折叠屏展开 / 桌面 H5）跟着内容列一起收窄居中，不横跨整块屏幕 */
+		max-width: var(--adapt-content-max, 560px);
+		box-sizing: border-box;
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	/* 只写布局，视觉全部由 glassmorphism 提供 */

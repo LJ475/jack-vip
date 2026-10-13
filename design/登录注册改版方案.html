@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登录 / 注册 改版方案 · 4 选 1</title>
+<style>
+/* ============================================================
+   这是「样机」不是成品代码：只为把 4 套方案的视觉与结构摆在一起对比。
+   尺寸换算：设计稿 750rpx ≈ 375px，这里 1rpx ≈ 0.5px，手机框宽 390px。
+   资源全部来自项目本体：static/login-hero.jpg、static/fonts/nailao.ttf、品牌色 #3A83F7。
+   ============================================================ */
+
+@font-face{
+  font-family:'NailaoHand';
+  src:url('../static/fonts/nailao.ttf') format('truetype');
+  font-display:swap;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:'PingFang SC','Microsoft YaHei',-apple-system,sans-serif;
+  background:#eef2f8;
+  color:#1f2b45;
+  padding:40px 28px 80px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- 页头 ---------- */
+.page-head{max-width:1780px;margin:0 auto 34px}
+.page-head h1{font-size:30px;letter-spacing:.5px}
+.page-head p{margin-top:12px;font-size:14px;line-height:1.9;color:#5c6c8d;max-width:1080px}
+.page-head code{background:#fff;border:1px solid #dfe7f3;border-radius:6px;padding:1px 6px;font-size:13px}
+.global-bar{margin-top:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.global-bar button{
+  font:inherit;font-size:14px;cursor:pointer;border:none;border-radius:999px;
+  padding:11px 22px;background:#3A83F7;color:#fff;font-weight:600;
+  box-shadow:0 10px 24px rgba(58,131,247,.3);
+}
+.global-bar button:active{background:#2D73E6}
+.hint{font-size:13px;color:#8994a9}
+
+/* ---------- 网格 ---------- */
+.grid{
+  max-width:1780px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(390px,1fr));
+  gap:34px;justify-items:center;
+}
+.opt{width:390px}
+.opt-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tag{
+  font-size:12px;font-weight:700;letter-spacing:.5px;color:#fff;background:#1f2b45;
+  border-radius:6px;padding:4px 9px;
+}
+.opt-head h2{font-size:17px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{
+  font:inherit;font-size:13px;cursor:pointer;border:1px solid #d8e2f2;background:#fff;
+  color:#5c6c8d;border-radius:999px;padding:7px 18px;font-weight:600;
+}
+.tab.active{background:#1f2b45;border-color:#1f2b45;color:#fff}
+
+/* ---------- 手机框 ---------- */
+.phone{
+  position:relative;width:390px;height:844px;border-radius:46px;overflow:hidden;
+  background:linear-gradient(180deg,#eaf2ff 0%,#f8fbff 45%,#fff 100%);
+  box-shadow:0 0 0 11px #16181d,0 0 0 13px #2c313a,0 34px 60px rgba(20,40,80,.22);
+}
+.statusbar{
+  position:absolute;top:0;left:0;right:0;height:44px;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 26px;font-size:14px;font-weight:600;color:#1f2b45;
+}
+.statusbar .sb-r{display:flex;align-items:center;gap:5px}
+.statusbar .bar{width:3px;border-radius:2px;background:currentColor}
+.statusbar .bar:nth-child(1){height:6px}
+.statusbar .bar:nth-child(2){height:9px}
+.statusbar .bar:nth-child(3){height:12px}
+.statusbar .bat{width:22px;height:11px;border:1.6px solid currentColor;border-radius:3px;position:relative;margin-left:4px}
+.statusbar .bat::after{content:'';position:absolute;inset:1.6px;right:6px;background:currentColor;border-radius:1px}
+.screen{position:absolute;inset:0;overflow:hidden}
+.view{display:none;height:100%;overflow-y:auto;overflow-x:hidden}
+.view.active{display:block}
+.view::-webkit-scrollbar{width:0}
+
+/* ---------- 通用控件（方案之间共用） ---------- */
+.ic{width:19px;height:19px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ic-sm{width:15px;height:15px}
+.ic-xs{width:12px;height:12px;stroke-width:2.4}
+
+.btn{
+  width:100%;height:52px;border-radius:999px;border:none;cursor:pointer;font:inherit;
+  font-size:16px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,#5B9CFF 0%,#3A83F7 50%,#2E6BE6 100%);
+  box-shadow:0 14px 30px rgba(58,131,247,.32);
+}
+.btn:active{background:linear-gradient(135deg,#3A83F7,#2E6BE6)}
+.btn.ghost{background:transparent;color:#3A83F7;border:1.5px solid #3A83F7;box-shadow:none}
+
+.hand{font-family:'NailaoHand','PingFang SC',sans-serif;font-weight:400}
+
+.legal{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:#8994a9;line-height:1.6}
+.cb{
+  width:15px;height:15px;border-radius:5px;border:1.5px solid #b3bdcc;flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+}
+.cb.on{background:#3A83F7;border-color:#3A83F7}
+.cb.on::after{content:'';width:7px;height:4px;border-left:1.8px solid #fff;border-bottom:1.8px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.legal b{color:#3A83F7;font-weight:500}
+.tiny{font-size:10.5px;color:#b3bdcc;text-align:center;letter-spacing:.2px}
+
+/* 输入行：胶囊白底 + 聚焦描边（对齐现有 login 页的 .af） */
+.field{
+  display:flex;align-items:center;gap:11px;height:52px;border-radius:999px;padding:0 17px;
+  background:#fff;border:1.5px solid transparent;box-shadow:0 5px 16px rgba(31,45,61,.07);
+  color:#8994a9;transition:border-color .18s;
+}
+.field:focus-within{border-color:#3A83F7;color:#3A83F7}
+.field input{
+  flex:1;border:none;outline:none;background:transparent;font:inherit;font-size:15px;color:#333;min-width:0;
+}
+.field input::placeholder{color:#b3bdcc}
+.field + .field{margin-top:12px}
+.err{display:flex;align-items:center;gap:6px;font-size:12px;color:#FF5F6D;margin:9px 4px 0}
+
+/* ============================================================
+   方案 A｜极简留白
+   ============================================================ */
+.a-wrap{padding:96px 28px 28px;min-height:100%;display:flex;flex-direction:column}
+.a-logo{
+  width:56px;height:56px;border-radius:19px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#5B9CFF,#2E6BE6);color:#fff;font-size:22px;font-weight:700;
+  box-shadow:0 12px 26px rgba(58,131,247,.32);
+}
+.a-brand{font-size:34px;color:#1f2b45;margin-top:20px;letter-spacing:1px}
+.a-sub{font-size:13.5px;color:#8994a9;margin-top:8px}
+.a-form{margin-top:38px}
+.a-row{display:flex;justify-content:flex-end;margin:10px 4px 0}
+.a-row span{font-size:12.5px;color:#3A83F7}
+.a-form .btn{margin-top:22px}
+.a-alt{text-align:center;font-size:13px;color:#8994a9;margin-top:18px}
+.a-alt b{color:#3A83F7;font-weight:600;margin-left:3px}
+.a-foot{margin-top:auto;padding-top:40px;display:flex;flex-direction:column;gap:14px}
+.a-quote{font-size:15px;color:#7fa0cc;text-align:center}
+
+/* ============================================================
+   方案 B｜人像杂志风（现版精修）
+   ============================================================ */
+.b-hero{position:relative;height:300px;overflow:hidden}
+.b-hero img{position:absolute;left:0;top:-72px;width:100%}
+.b-hero .fade{
+  position:absolute;left:0;right:0;bottom:0;height:110px;
+  background:linear-gradient(180deg,rgba(248,251,255,0) 0%,rgba(248,251,255,.88) 62%,#f8fbff 100%);
+}
+.b-hello{position:absolute;left:24px;bottom:16px}
+.b-hello text{display:block}
+.b-hello .l1,.b-hello .l2{font-size:20px;color:#2b3a55;line-height:1.34}
+.b-hello .ln{width:92px;height:2px;border-radius:999px;background:rgba(43,58,85,.4);margin-top:6px;transform:rotate(-2deg)}
+.b-body{padding:2px 24px 30px;margin-top:-26px;position:relative;z-index:2}
+.b-card{
+  background:rgba(255,255,255,.82);backdrop-filter:blur(16px) saturate(160%);
+  -webkit-backdrop-filter:blur(16px) saturate(160%);
+  border:1px solid rgba(255,255,255,.75);border-radius:26px;
+  padding:22px 18px 20px;box-shadow:0 16px 40px rgba(31,45,61,.14);
+}
+.b-title{display:flex;align-items:flex-end;gap:8px}
+.b-title .t1{font-size:27px;font-weight:700;color:#1f2b45;letter-spacing:1px}
+.b-title .t2{font-size:30px;color:#3A83F7;line-height:1}
+.b-title .mk{position:absolute;height:3px;border-radius:999px;background:#3A83F7;opacity:.5;transform:rotate(-1.5deg)}
+.b-sub{font-size:12.5px;color:#8994a9;margin-top:8px}
+.b-fields{margin-top:18px}
+.b-foot{display:flex;flex-direction:column;gap:13px;margin-top:26px}
+.b-quote{font-size:15px;color:#7fa0cc;text-align:center}
+.b-switch{text-align:center;font-size:13px;color:#8994a9}
+.b-switch b{color:#3A83F7;font-weight:600}
+
+/* ============================================================
+   方案 C｜单页切换 + 底部玻璃面板
+   ============================================================ */
+.c-bg{position:absolute;inset:0;overflow:hidden}
+.c-bg img{width:100%;position:absolute;left:0;top:-40px}
+.c-bg .shade{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(12,20,34,.42) 0%,rgba(12,20,34,.06) 34%,rgba(12,20,34,.55) 62%,rgba(12,20,34,.86) 100%);
+}
+.c-greet{position:absolute;left:26px;top:78px;z-index:3}
+.c-greet .l{display:block;font-size:26px;color:#fff;line-height:1.36;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.c-greet .ln{width:110px;height:2.5px;border-radius:999px;background:rgba(255,255,255,.65);margin-top:9px;transform:rotate(-2deg)}
+.c-panel{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  background:rgba(255,255,255,.88);backdrop-filter:blur(22px) saturate(170%);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  border-top:1px solid rgba(255,255,255,.9);border-radius:32px 32px 0 0;
+  box-shadow:0 -14px 44px rgba(20,40,80,.18);
+  padding:12px 24px calc(22px + env(safe-area-inset-bottom));
+}
+.c-grab{width:44px;height:4px;border-radius:999px;background:#c9d5e6;margin:0 auto 12px}
+.c-seg{
+  display:flex;background:rgba(23,33,58,.07);border-radius:999px;padding:4px;margin-bottom:20px;
+}
+.c-seg button{
+  flex:1;font:inherit;font-size:14px;font-weight:600;border:none;background:transparent;color:#8994a9;
+  border-radius:999px;padding:9px 0;cursor:pointer;
+}
+.c-seg button.on{background:#fff;color:#1f2b45;box-shadow:0 3px 10px rgba(31,45,61,.12)}
+.c-panel .btn{margin-top:18px}
+.c-alt{text-align:center;font-size:12.5px;color:#8994a9;margin-top:14px}
+.c-alt b{color:#3A83F7}
+.c-legal{margin-top:16px}
+.c-mini{font-size:12px;color:#8994a9;text-align:center;margin-bottom:12px}
+
+/* ============================================================
+   方案 D｜暗色金（思考实验主题）
+   ============================================================ */
+.d-wrap{
+  position:relative;min-height:100%;padding:70px 26px 30px;display:flex;flex-direction:column;
+  background:radial-gradient(90% 40% at 50% 0%,rgba(232,179,65,.10) 0%,transparent 70%),
+             linear-gradient(180deg,#0C0C11 0%,#0B0B0F 100%);
+}
+.d-photo{
+  position:absolute;left:0;right:0;top:0;height:330px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 0%,#000 42%,transparent 100%);
+}
+.d-photo img{width:100%;position:absolute;left:0;top:-60px;filter:saturate(.55) contrast(1.05) brightness(.72)}
+.d-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(232,179,65,.16),rgba(11,11,15,.9) 78%)}
+.d-inner{position:relative;z-index:2}
+.d-hello{font-size:30px;color:#F0E4C6;line-height:1.4;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.d-sub{font-size:12.5px;color:#85858D;margin-top:10px}
+.d-title{margin-top:150px;display:flex;align-items:flex-end;gap:9px}
+.d-title .t1{font-size:26px;font-weight:700;color:#E8E8EA}
+.d-title .t2{font-size:31px;color:#E8B341;line-height:1}
+.d-line{width:150px;height:3px;border-radius:999px;background:linear-gradient(90deg,#FFF0B0,#E8B341);opacity:.75;margin-top:8px;transform:rotate(-1.2deg)}
+.d-fields{margin-top:26px}
+.d-field{
+  display:flex;align-items:center;gap:11px;height:54px;border-radius:16px;padding:0 16px;
+  background:rgba(255,255,255,.05);border:1.4px solid #2A2A32;color:#686870;transition:.18s;
+}
+.d-field:focus-within{border-color:rgba(232,179,65,.75);color:#E8B341;background:rgba(232,179,65,.06)}
+.d-field input{flex:1;border:none;outline:none;background:transparent;font:inherit;font-size:15px;color:#E8E8EA;min-width:0}
+.d-field input::placeholder{color:#686870}
+.d-field + .d-field{margin-top:13px}
+.d-row{display:flex;justify-content:flex-end;margin:10px 4px 0}
+.d-row span{font-size:12.5px;color:#E8B341}
+.d-btn{
+  position:relative;overflow:hidden;width:100%;height:54px;border-radius:999px;border:none;cursor:pointer;
+  font:inherit;font-size:16px;font-weight:700;color:#241A05;margin-top:22px;
+  background:linear-gradient(135deg,#FFF0B0 0%,#FFD34E 45%,#E8B341 100%);
+  box-shadow:0 14px 34px rgba(232,179,65,.26);
+}
+.d-btn::after{
+  content:'';position:absolute;top:-20%;left:0;width:34%;height:140%;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.45) 50%,transparent);
+  transform:skewX(-22deg) translateX(-220%);animation:sheen 3.8s ease-in-out infinite;
+}
+@keyframes sheen{0%,55%{transform:skewX(-22deg) translateX(-220%)}80%,100%{transform:skewX(-22deg) translateX(420%)}}
+.d-alt{text-align:center;font-size:13px;color:#85858D;margin-top:18px}
+.d-alt b{color:#E8D9A8}
+.d-foot{margin-top:auto;padding-top:34px;display:flex;flex-direction:column;gap:13px}
+.d-legal{color:#8E8E97}
+.d-legal b{color:#C9B48A}
+.d-quote{font-size:15px;color:#C9A24A;text-align:center}
+
+/* ============================================================
+   暗色（思考实验）主题：A/B/C 三套跟随，D 本来就是暗的
+   ============================================================ */
+body.dark{background:#0a0c10;color:#e8e8ea}
+body.dark .page-head p{color:#9aa8b8}
+body.dark .page-head code{background:#151922;border-color:#26303f}
+body.dark .tab{background:#151922;border-color:#26303f;color:#9aa8b8}
+body.dark .tab.active{background:#E8B341;border-color:#E8B341;color:#241A05}
+body.dark .tag{background:#E8B341;color:#241A05}
+
+body.dark .phone{background:linear-gradient(180deg,#101018 0%,#0B0B0F 60%)}
+body.dark .statusbar{color:#E8E8EA}
+body.dark .field{background:#1A1A1F;border-color:#2A2A32;box-shadow:0 5px 16px rgba(0,0,0,.3);color:#686870}
+body.dark .field:focus-within{border-color:#E8B341;color:#E8B341}
+body.dark .field input{color:#E8E8EA}
+body.dark .field input::placeholder{color:#686870}
+body.dark .btn{background:linear-gradient(135deg,#FFF0B0,#FFD34E 45%,#E8B341);color:#241A05;box-shadow:0 14px 30px rgba(232,179,65,.26)}
+body.dark .legal{color:#85858D}
+body.dark .legal b{color:#E8D9A8}
+body.dark .cb{border-color:#3A3A44}
+body.dark .cb.on{background:#E8B341;border-color:#E8B341}
+body.dark .tiny{color:#8b8b95}
+
+body.dark .a-logo{background:linear-gradient(135deg,#FFF0B0,#E8B341);color:#241A05;box-shadow:0 12px 26px rgba(232,179,65,.24)}
+body.dark .a-brand{color:#E8E8EA}
+body.dark .a-sub,body.dark .a-alt{color:#9A9AA2}
+body.dark .a-row span,body.dark .a-alt b{color:#E8B341}
+body.dark .a-quote{color:#C9A24A}
+
+body.dark .b-hero .fade{background:linear-gradient(180deg,rgba(16,16,24,0) 0%,rgba(16,16,24,.88) 62%,#101018 100%)}
+body.dark .b-hello .l1,body.dark .b-hello .l2{color:#8fa8cc}
+body.dark .b-hello .ln{background:rgba(143,168,204,.45)}
+body.dark .b-card{background:rgba(20,20,25,.86);border-color:#2A2A32;box-shadow:0 16px 40px rgba(0,0,0,.42)}
+body.dark .b-title .t1{color:#E8E8EA}
+body.dark .b-title .t2{color:#E8B341}
+body.dark .b-title .mk{background:#E8B341}
+body.dark .b-sub{color:#85858D}
+body.dark .b-switch{color:#9A9AA2}
+body.dark .b-switch b{color:#E8B341}
+body.dark .b-quote{color:#C9A24A}
+
+body.dark .c-panel{background:rgba(20,20,25,.9);border-top-color:#2A2A32;box-shadow:0 -14px 44px rgba(0,0,0,.5)}
+body.dark .c-grab{background:#3A3A44}
+body.dark .c-seg{background:rgba(255,255,255,.06)}
+body.dark .c-seg button{color:#9A9AA2}
+body.dark .c-seg button.on{background:#22232A;color:#E8E8EA;box-shadow:none}
+body.dark .c-alt{color:#A3A3AA}
+body.dark .c-alt b{color:#E8B341}
+body.dark .c-mini{color:#9A9AA2}
+
+/* ---------- 说明卡 ---------- */
+.notes{
+  list-style:none;margin-top:18px;background:#fff;border:1px solid #e4ebf6;border-radius:16px;padding:16px 18px;
+  box-shadow:0 8px 22px rgba(31,45,61,.06);
+}
+.notes li{position:relative;padding-left:16px;font-size:12.5px;line-height:1.85;color:#5c6c8d}
+.notes li::before{content:'';position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:#3A83F7}
+.notes li b{color:#1f2b45}
+.notes li.good::before{background:#27C68A}
+.notes li.bad::before{background:#F59E0B}
+body.dark .notes{background:#141419;border-color:#252a33;box-shadow:none}
+body.dark .notes li{color:#9aa8b8}
+body.dark .notes li b{color:#E8E8EA}
+
+/* ---------- 对比表 + 通用改进 ---------- */
+.tail{max-width:1780px;margin:64px auto 0}
+.tail h2{font-size:21px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 22px rgba(31,45,61,.06);font-size:13px}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid #eef2f8;vertical-align:top;line-height:1.7}
+th{background:#f6f9fe;font-weight:700;color:#1f2b45;white-space:nowrap}
+td:first-child{font-weight:700;color:#1f2b45;white-space:nowrap}
+.yes{color:#27C68A;font-weight:700}
+.no{color:#F59E0B;font-weight:700}
+body.dark table{background:#141419;box-shadow:none}
+body.dark th{background:#1a1f27;color:#E8E8EA}
+body.dark td{border-bottom-color:#232a33;color:#9aa8b8}
+body.dark td:first-child{color:#E8E8EA}
+.shared{margin-top:44px}
+.shared ol{margin:0;padding-left:0;list-style:none;counter-reset:n}
+.shared li{
+  counter-increment:n;position:relative;background:#fff;border:1px solid #e4ebf6;border-radius:14px;
+  padding:15px 18px 15px 54px;margin-bottom:11px;font-size:13.5px;line-height:1.85;color:#5c6c8d;
+}
+.shared li::before{
+  content:counter(n);position:absolute;left:16px;top:15px;width:24px;height:24px;border-radius:50%;
+  background:#3A83F7;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.shared li b{color:#1f2b45}
+body.dark .shared li{background:#141419;border-color:#252a33;color:#9aa8b8}
+body.dark .shared li b{color:#E8E8EA}
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M3.5 7.5 12 13l8.5-5.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="9.5" rx="3"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-6.2 10-6.2S22 12 22 12s-3.6 6.2-10 6.2S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v6c0 4.4-3.1 8-7.5 9.4C7.6 20 4.5 16.4 4.5 12V6Z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.6v5.2M12 16.3v.2"/></symbol>
+</svg>
+
+<header class="page-head">
+  <h1>登录 / 注册 改版方案 · 4 选 1</h1>
+  <p>
+    四套方案都用项目现有资源画：人像 <code>static/login-hero.jpg</code>、手写体 <code>static/fonts/nailao.ttf</code>、
+    品牌色 <code>#3A83F7</code>、思考实验主题金 <code>#E8B341</code>。输入框是真的，可以点进去打字；
+    每台手机上方可切「登录 / 注册」，右上角按钮可把 A/B/C 一起翻成暗色（思考实验主题）看效果。
+  </p>
+  <div class="global-bar">
+    <button id="themeBtn">切换暗色（思考实验主题）</button>
+    <span class="hint">尺寸按 750rpx 稿换算：1rpx ≈ 0.5px，手机框 390 × 844</span>
+  </div>
+</header>
+
+<main class="grid">
+
+  <!-- ============ 方案 A ============ -->
+  <section class="opt" data-opt="A">
+    <div class="opt-head"><span class="tag">方案 A</span><h2>极简留白 · 无照片</h2></div>
+    <div class="tabs">
+      <button class="tab active" data-view="login">登录</button>
+      <button class="tab" data-view="register">注册</button>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span class="sb-r"><i class="bar"></i><i class="bar"></i><i class="bar"></i><i class="bat"></i></span></div>
+      <div class="screen">
+
+        <div class="view active" data-screen="login">
+          <div class="a-wrap">
+            <div class="a-logo">6</div>
+            <div class="a-brand hand">6年之约</div>
+            <div class="a-sub">每天一张值得收藏的分享图</div>
+
+            <div class="a-form">
+              <div class="field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+              <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="密码" value="••••••••"><svg class="ic" style="margin-left:auto"><use href="#i-eye"/></svg></div>
+              <div class="a-row"><span>忘记密码？</span></div>
+              <button class="btn">登录</button>
+              <div class="a-alt">还没有账号？<b>去注册</b></div>
+            </div>
+
+            <div class="a-foot">
+              <div class="legal"><span class="cb on"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+              <div class="a-quote hand">和更好的自己相遇</div>
+              <div class="tiny">苏ICP备00000000号-1A</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" data-screen="register">
+          <div class="a-wrap">
+            <div class="a-logo">6</div>
+            <div class="a-brand hand">6年之约</div>
+            <div class="a-sub">注册一个账号，换手机也不丢数据</div>
+
+            <div class="a-form">
+              <div class="field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+              <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="设置密码（至少 6 位）" value=""></div>
+              <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="再输一次密码" value=""></div>
+              <button class="btn" style="margin-top:22px">注册并登录</button>
+              <div class="a-alt">已经有账号了？<b>直接登录</b></div>
+            </div>
+
+            <div class="a-foot">
+              <div class="legal"><span class="cb on"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+              <div class="tiny">注册即表示你同意我们仅收集邮箱用于登录</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <ul class="notes">
+      <li><b>视觉</b>：顶部大留白 + 品牌字标，表单是独立白卡，无任何大图。</li>
+      <li class="good"><b>优点</b>：秒开（不加载 117KB 人像）、信息密度高、亮暗两套主题都稳、国际化/无障碍最好做。</li>
+      <li class="bad"><b>代价</b>：丢掉「真人 IP」的辨识度——这个 App 的卖点恰恰是 jack 本人，首屏看不到人。</li>
+      <li><b>适合</b>：以后要上架应用商店、或首屏加载速度被投诉时。</li>
+    </ul>
+  </section>
+
+  <!-- ============ 方案 B ============ -->
+  <section class="opt" data-opt="B">
+    <div class="opt-head"><span class="tag">方案 B</span><h2>人像杂志风 · 现版精修</h2></div>
+    <div class="tabs">
+      <button class="tab active" data-view="login">登录</button>
+      <button class="tab" data-view="register">注册</button>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span class="sb-r"><i class="bar"></i><i class="bar"></i><i class="bar"></i><i class="bat"></i></span></div>
+      <div class="screen">
+
+        <div class="view active" data-screen="login">
+          <div class="b-hero">
+            <img src="../static/login-hero.jpg" alt="">
+            <div class="fade"></div>
+            <div class="b-hello hand">
+              <span class="l1">你好，</span>
+              <span class="l2">很高兴见到你！</span>
+              <div class="ln"></div>
+            </div>
+          </div>
+          <div class="b-body">
+            <div class="b-card">
+              <div class="b-title"><span class="t1">开启</span><span class="t2 hand">6年之约</span></div>
+              <div class="b-sub">用每天的坚持，遇见更好的自己</div>
+
+              <div class="b-fields">
+                <div class="field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+                <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="密码" value="••••••••"><svg class="ic" style="margin-left:auto"><use href="#i-eye"/></svg></div>
+                <div class="a-row"><span>忘记密码？</span></div>
+              </div>
+
+              <button class="btn">登录</button>
+              <div class="b-switch" style="margin-top:16px">还没有账号？<b>去注册</b></div>
+            </div>
+
+            <div class="b-foot">
+              <div class="legal"><span class="cb on"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+              <div class="b-quote hand">和更好的自己相遇</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" data-screen="register">
+          <div class="b-hero">
+            <img src="../static/login-hero.jpg" alt="">
+            <div class="fade"></div>
+            <div class="b-hello hand">
+              <span class="l1">你好，</span>
+              <span class="l2">很高兴见到你！</span>
+              <div class="ln"></div>
+            </div>
+          </div>
+          <div class="b-body">
+            <div class="b-card">
+              <div class="b-title"><span class="t1">开启</span><span class="t2 hand">6年之约</span></div>
+              <div class="b-sub">注册账号，开启你的专属旅程</div>
+
+              <div class="b-fields">
+                <div class="field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+                <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="设置密码（至少 6 位）" value=""><svg class="ic" style="margin-left:auto"><use href="#i-eye"/></svg></div>
+                <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="再输一次密码" value=""></div>
+              </div>
+
+              <button class="btn" style="margin-top:20px">注册并登录</button>
+              <div class="b-switch" style="margin-top:16px">已经有账号了？<b>直接登录</b></div>
+            </div>
+
+            <div class="b-foot">
+              <div class="legal"><span class="cb on"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+              <div class="b-quote hand">和更好的自己相遇</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <ul class="notes">
+      <li><b>视觉</b>：保留现版的真人首屏 + 手写问候，但把表单收进一张悬浮玻璃卡（照片下沿上浮 26px），页面更短更整。</li>
+      <li class="good"><b>优点</b>：改动量最小（在现有 <code>pages/login</code>、<code>pages/register</code> 上直接精修），品牌感与现在一致，风险最低。</li>
+      <li class="bad"><b>代价</b>：仍是「一页登录 + 一页注册」两次跳转；hero 占 300px，小屏（如 5.5 寸）需要滚一点才能看到按钮。</li>
+      <li><b>适合</b>：想稳一点、先要个「比现在好看一档」的结果。</li>
+    </ul>
+  </section>
+
+  <!-- ============ 方案 C ============ -->
+  <section class="opt" data-opt="C">
+    <div class="opt-head"><span class="tag">方案 C</span><h2>单页切换 · 底部玻璃面板</h2></div>
+    <div class="tabs">
+      <button class="tab active" data-view="login">登录</button>
+      <button class="tab" data-view="register">注册</button>
+    </div>
+    <div class="phone">
+      <div class="statusbar" style="color:#fff"><span>9:41</span><span class="sb-r"><i class="bar"></i><i class="bar"></i><i class="bar"></i><i class="bat"></i></span></div>
+      <div class="screen">
+
+        <div class="view active" data-screen="login" style="overflow:hidden">
+          <div class="c-bg">
+            <img src="../static/login-hero.jpg" alt="">
+            <div class="shade"></div>
+          </div>
+          <div class="c-greet hand">
+            <span class="l">你好，</span>
+            <span class="l">很高兴见到你！</span>
+            <div class="ln"></div>
+          </div>
+          <div class="c-panel">
+            <div class="c-grab"></div>
+            <div class="c-seg">
+              <button class="on" data-view="login">登录</button>
+              <button data-view="register">注册</button>
+            </div>
+            <div class="field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+            <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="密码" value=""><svg class="ic" style="margin-left:auto"><use href="#i-eye"/></svg></div>
+            <div class="a-row"><span>忘记密码？</span></div>
+            <button class="btn">登录</button>
+            <div class="c-alt">还没有账号？<b>点上面的「注册」</b></div>
+            <div class="c-legal legal"><span class="cb on"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+          </div>
+        </div>
+
+        <div class="view" data-screen="register" style="overflow:hidden">
+          <div class="c-bg">
+            <img src="../static/login-hero.jpg" alt="">
+            <div class="shade"></div>
+          </div>
+          <div class="c-greet hand">
+            <span class="l">你好，</span>
+            <span class="l">很高兴见到你！</span>
+            <div class="ln"></div>
+          </div>
+          <div class="c-panel">
+            <div class="c-grab"></div>
+            <div class="c-seg">
+              <button data-view="login">登录</button>
+              <button class="on" data-view="register">注册</button>
+            </div>
+            <div class="c-mini">注册即登录，不发送验证邮件</div>
+            <div class="field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+            <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="设置密码（至少 6 位）" value=""></div>
+            <div class="field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="再输一次密码" value=""></div>
+            <button class="btn" style="margin-top:20px">注册并登录</button>
+            <div class="c-legal legal"><span class="cb on"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <ul class="notes">
+      <li><b>视觉</b>：照片铺满全屏，表单是压在底部的毛玻璃面板（32px 上圆角 + 高斯模糊），面板内用分段胶囊切「登录 / 注册」。</li>
+      <li class="good"><b>优点</b>：<b>登录注册同页切换</b>，少一次跳转、少一个页面栈；切换时只多一个字段，面板自然变高；这是目前主流 App 的形态。</li>
+      <li class="bad"><b>代价</b>：要处理键盘弹起时面板上移（Android 软键盘 + 固定面板是经典坑）；两套状态共用一个页面，代码比 A/B 复杂一点。</li>
+      <li><b>适合</b>：愿意多花半天做交互打磨，换最好的第一印象——<b>我个人推荐这套</b>。</li>
+    </ul>
+  </section>
+
+  <!-- ============ 方案 D ============ -->
+  <section class="opt" data-opt="D">
+    <div class="opt-head"><span class="tag">方案 D</span><h2>暗色金 · 思考实验专属</h2></div>
+    <div class="tabs">
+      <button class="tab active" data-view="login">登录</button>
+      <button class="tab" data-view="register">注册</button>
+    </div>
+    <div class="phone" style="background:linear-gradient(180deg,#0C0C11,#0B0B0F)">
+      <div class="statusbar" style="color:#E8E8EA"><span>9:41</span><span class="sb-r"><i class="bar"></i><i class="bar"></i><i class="bar"></i><i class="bat"></i></span></div>
+      <div class="screen">
+
+        <div class="view active" data-screen="login">
+          <div class="d-wrap">
+            <div class="d-photo"><img src="../static/login-hero.jpg" alt=""></div>
+            <div class="d-inner">
+              <div class="d-hello hand">你好，<br>很高兴见到你！</div>
+              <div class="d-sub">365 天思考实验 · 每天记一点</div>
+
+              <div class="d-title"><span class="t1">开启</span><span class="t2 hand">6年之约</span></div>
+              <div class="d-line"></div>
+
+              <div class="d-fields">
+                <div class="d-field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+                <div class="d-field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="密码" value="••••••••"><svg class="ic" style="margin-left:auto"><use href="#i-eye"/></svg></div>
+                <div class="d-row"><span>忘记密码？</span></div>
+              </div>
+
+              <button class="d-btn">登录</button>
+              <div class="d-alt">还没有账号？<b>去注册</b></div>
+
+              <div class="d-foot">
+                <div class="legal d-legal"><span class="cb on" style="border-color:#E8B341;background:#E8B341"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+                <div class="d-quote hand">和更好的自己相遇</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" data-screen="register">
+          <div class="d-wrap">
+            <div class="d-photo"><img src="../static/login-hero.jpg" alt=""></div>
+            <div class="d-inner">
+              <div class="d-hello hand">你好，<br>很高兴见到你！</div>
+              <div class="d-sub">注册一个账号，换手机也不丢数据</div>
+
+              <div class="d-title"><span class="t1">开启</span><span class="t2 hand">6年之约</span></div>
+              <div class="d-line"></div>
+
+              <div class="d-fields">
+                <div class="d-field"><svg class="ic"><use href="#i-mail"/></svg><input type="text" placeholder="邮箱地址" value=""></div>
+                <div class="d-field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="设置密码（至少 6 位）" value=""></div>
+                <div class="d-field"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="再输一次密码" value=""></div>
+              </div>
+
+              <button class="d-btn">注册并登录</button>
+              <div class="d-alt">已经有账号了？<b>直接登录</b></div>
+
+              <div class="d-foot">
+                <div class="legal d-legal"><span class="cb on" style="border-color:#E8B341;background:#E8B341"></span><span>我已阅读并同意 <b>《用户协议》</b> 和 <b>《隐私政策》</b></span></div>
+                <div class="d-quote hand">和更好的自己相遇</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <ul class="notes">
+      <li><b>视觉</b>：曜石黑底 + 金属金主色，人像压暗去饱和当背景，输入行改成金色描边式，主按钮带周期性扫光。</li>
+      <li class="good"><b>优点</b>：和「365 天思考实验」主题完全一致，夜间不刺眼，四套里最有辨识度。</li>
+      <li class="bad"><b>代价</b>：默认是「图片分享」蓝色主题，用户第一眼看到黑金会觉得跳；要么当可选主题，要么让登录页跟随上次主题。</li>
+      <li><b>适合</b>：把「思考实验」当主打、想强调「这是一个安静写字的地方」。</li>
+    </ul>
+  </section>
+
+</main>
+
+<section class="tail">
+  <h2>四套方案横向对比</h2>
+  <table>
+    <tr>
+      <th>方案</th><th>首屏观感</th><th>登录→注册</th><th>改动量</th><th>小屏友好</th><th>亮/暗主题</th><th>加载开销</th>
+    </tr>
+    <tr><td>A 极简留白</td><td>干净、工具感</td><td>两页跳转</td><td class="yes">小</td><td class="yes">最好</td><td class="yes">两套都稳</td><td class="yes">最低（无图）</td></tr>
+    <tr><td>B 人像杂志风</td><td>温和、有真人</td><td>两页跳转</td><td class="yes">最小（现版精修）</td><td class="no">需滚一点</td><td class="yes">已适配</td><td>中（117KB 图）</td></tr>
+    <tr><td>C 单页玻璃面板</td><td>现代、沉浸</td><td class="yes">同页切换</td><td class="no">中</td><td class="yes">好</td><td class="yes">已适配</td><td>中</td></tr>
+    <tr><td>D 暗色金</td><td>安静、高级</td><td>两页跳转</td><td>中</td><td>好</td><td class="no">天生只有暗色</td><td>中</td></tr>
+  </table>
+
+  <div class="shared">
+    <h2>不管选哪套，这 8 处建议一起改（现在是缺的）</h2>
+    <ol>
+      <li><b>协议勾选 + 协议页</b>：现在整个 App 没有《用户协议》《隐私政策》入口。要发安卓包（尤其是上应用商店）这是硬性合规项，登录页正好是放它的位置。</li>
+      <li><b>错误提示内联到字段</b>：现在所有报错挤在按钮上方一行红字（<code>.au-err</code>），「邮箱格式不对」应该长在邮箱框下面。密码强度也在字段下方实时显示。</li>
+      <li><b>忘记密码的出路</b>：目前只能弹窗让用户加你微信人工改。要么保留但写成「点这里找我改」，要么做真·自助重置（需要自建发信通道，见下面的功能缺口清单）。</li>
+      <li><b>登录态过期的提示</b>：<code>guardSession()</code> 现在是被动踢回登录页，用户不知道自己为什么被踢。应在登录页顶部显示「登录已过期，请重新登录」。</li>
+      <li><b>「记住我」/自动登录</b>：现在靠 refresh_token 静默续期，但没有任何 UI 说明。可以加一行「保持登录」勾选（默认勾上）。</li>
+      <li><b>键盘与输入体验</b>：邮箱框 <code>type="text"</code> 应改 <code>type="text" inputmode="email"</code> 或直接 <code>type="email"</code>，拿到邮箱键盘；「下一步」链路要能一路跳到提交。</li>
+      <li><b>提交中防重复 + 按钮态</b>：现在只有 <code>loading</code> 时改文字，应禁用点击并显示转圈，避免连点产生两次注册请求。</li>
+      <li><b>登录/注册成功后的落点</b>：现在统一 <code>reLaunch</code> 回日历。如果是从「我的 → 退出登录」来的，回到日历是对的；但如果用户是从某个二级页被踢出去的，应该回到原来那页。</li>
+    </ol>
+  </div>
+</section>
+
+<script>
+// 全局亮/暗切换（模拟「图片分享」↔「思考实验」两套主题）
+const themeBtn = document.getElementById('themeBtn')
+themeBtn.addEventListener('click', () => {
+  const dark = document.body.classList.toggle('dark')
+  themeBtn.textContent = dark ? '切换亮色（图片分享主题）' : '切换暗色（思考实验主题）'
+})
+
+// 每台手机内：登录 / 注册 切换（外部分段按钮与面板内分段胶囊共用同一套 data-view）
+document.querySelectorAll('.opt').forEach((opt) => {
+  const setView = (view) => {
+    opt.querySelectorAll('.view').forEach((v) => {
+      v.classList.toggle('active', v.dataset.screen === view)
+    })
+    opt.querySelectorAll('.tab').forEach((t) => {
+      t.classList.toggle('active', t.dataset.view === view)
+    })
+    opt.querySelectorAll('.c-seg button').forEach((b) => {
+      b.classList.toggle('on', b.dataset.view === view)
+    })
+  }
+  opt.querySelectorAll('[data-view]').forEach((btn) => {
+    btn.addEventListener('click', () => setView(btn.dataset.view))
+  })
+})
+
+// 协议勾选框可点（纯演示）
+document.querySelectorAll('.cb').forEach((cb) => {
+  cb.addEventListener('click', () => cb.classList.toggle('on'))
+})
+</script>
+</body>
+</html>

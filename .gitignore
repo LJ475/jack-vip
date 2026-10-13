@@ -19,3 +19,13 @@ static/fonts/
 
 # 依赖目录
 node_modules/
+
+# 管理员密钥：已经挪到项目外面（C:\Users\<你>\.jack-admin\supabase-secret.txt），
+# 这里再挡一道，防止哪天手滑又在项目里建一份
+supabase/.secrets/
+
+# wrangler 的本地运行状态（缓存、R2 模拟数据），不是源码
+.wrangler/
+
+# 本地测试脚手架（H5 预览、CDP 探针、临时测试台）
+.tmp/

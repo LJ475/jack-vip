@@ -771,4 +771,42 @@ onHide(() => {
 	.sk-cap {
 		padding: 24rpx 28rpx 0;
 	}
+
+	/* ===== 设备尺寸适配 =====
+	   宽屏（> 560px 设计宽）由 App.vue 统一收成居中列，这里只管窄屏与矮屏。 */
+
+	/* 窄屏（< 360px，5.0" 及以下、小折叠外屏）：Hero 与分段控件收一档，
+	   两个中文分段标签（专属会员分享 / 365天思考实验）才不会挤在一起 */
+	@media (max-width: 359px) {
+		.hero {
+			padding: 32rpx 24rpx;
+		}
+
+		.hero-title {
+			font-size: 36rpx;
+			letter-spacing: 1rpx;
+		}
+
+		.mode-text {
+			font-size: calc(24rpx * var(--fs, 1));
+		}
+	}
+
+	/* 矮屏（横屏手机、小屏机）：纵向留白与内容图高度都收一档，
+	   让日历 + 当天内容尽量落在首屏里 */
+	@media (max-height: 640px) {
+		.hero {
+			padding: 28rpx 24rpx;
+			margin-bottom: 16rpx;
+		}
+
+		.mode-switch {
+			margin-bottom: 16rpx;
+		}
+
+		.share-img-wrap,
+		.share-img {
+			height: 300rpx;
+		}
+	}
 </style>

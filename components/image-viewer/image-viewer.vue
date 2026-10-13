@@ -101,6 +101,12 @@ function save(it) {
 		flex-direction: row;
 		align-items: center;
 		padding: calc(var(--status-bar-height, 0px) + 24rpx) 28rpx 20rpx;
+		/* 宽屏下顶部信息跟着内容列居中，不贴到屏幕两端 */
+		max-width: var(--adapt-content-max, 560px);
+		margin-left: auto;
+		margin-right: auto;
+		box-sizing: border-box;
+		width: 100%;
 	}
 
 	.viewer-date {
@@ -145,5 +151,11 @@ function save(it) {
 		font-size: calc(22rpx * var(--fs, 1));
 		color: rgba(255, 255, 255, 0.45);
 		text-align: center;
+		/* 宽屏下与顶部信息同宽居中 */
+		max-width: var(--adapt-content-max, 560px);
+		margin-left: auto;
+		margin-right: auto;
+		box-sizing: border-box;
+		width: 100%;
 	}
 </style>

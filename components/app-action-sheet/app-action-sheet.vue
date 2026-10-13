@@ -66,6 +66,10 @@ function pick(i) {
 		left: 24rpx;
 		right: 24rpx;
 		bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+		/* 宽屏（平板 / 折叠屏展开 / 桌面 H5）下跟着内容列收窄居中 */
+		max-width: calc(var(--adapt-content-max, 560px) - 48rpx);
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.as-panel {

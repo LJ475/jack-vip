@@ -143,6 +143,11 @@ function applyImport(keys) {
 		right: 0;
 		bottom: 0;
 		padding: 0 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
+		/* 宽屏（平板 / 折叠屏展开 / 桌面 H5）跟着内容列收窄居中 */
+		max-width: var(--adapt-content-max, 560px);
+		box-sizing: border-box;
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.bk-inner {
