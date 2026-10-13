@@ -1,0 +1,8 @@
+name = "jack-user-api"
+main = "user-data-worker.js"
+compatibility_date = "2026-10-01"
+
+# 变量名必须与 worker 代码里的 env.BUCKET 一致
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "jack-user"

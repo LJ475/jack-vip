@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>账号管理 · jack</title>
+<style>
+	:root{
+		--brand:#3A83F7; --brand-dark:#2D73E6; --brand-soft:#EAF2FF;
+		--text:#1F2D3D; --text-2:#5C6C8D; --text-3:#8994A9; --text-4:#B3BDCC;
+		--ok:#27C68A; --ok-soft:#E6F9F2;
+		--warn:#F59E0B; --danger:#FF5F6D; --danger-soft:#FFECEE;
+		--line:#E8EDF5; --card:#FFFFFF; --bg:#F4F7FC;
+		--radius:16px;
+	}
+	*{box-sizing:border-box;margin:0;padding:0}
+	body{
+		font-family:'PingFang SC','Microsoft YaHei',-apple-system,sans-serif;
+		background:linear-gradient(160deg,#EDF4FF 0%,#F7FBFF 45%,#F4F7FC 100%);
+		min-height:100vh;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;
+	}
+	.wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+
+	/* ── 登录闸门 ───────────────────────────────────────── */
+	#gate{max-width:460px;margin:9vh auto 0;background:var(--card);border-radius:22px;
+		padding:38px 34px 32px;box-shadow:0 18px 50px rgba(31,45,61,.10)}
+	#gate h1{font-size:23px;font-weight:600;margin-bottom:6px}
+	#gate .sub{color:var(--text-3);font-size:13px;margin-bottom:26px}
+	.field{display:flex;align-items:center;gap:10px;height:50px;border:1.5px solid var(--line);
+		border-radius:14px;padding:0 16px;background:#FBFCFE;transition:.18s}
+	.field:focus-within{border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(58,131,247,.10)}
+	.field input{flex:1;border:0;outline:0;background:transparent;font-size:14px;
+		font-family:inherit;color:var(--text);letter-spacing:.3px}
+	.field input::placeholder{color:var(--text-4);letter-spacing:0}
+	.row{display:flex;align-items:center;gap:9px;margin:16px 2px 22px;color:var(--text-2);font-size:13px}
+	.row input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer}
+	.btn{height:50px;width:100%;border:0;border-radius:14px;background:var(--brand);color:#fff;
+		font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:.18s}
+	.btn:hover{background:var(--brand-dark)}
+	.btn:disabled{opacity:.55;cursor:not-allowed}
+	.note{margin-top:22px;padding:14px 16px;background:#F7FAFF;border-radius:12px;
+		font-size:12.5px;line-height:1.85;color:var(--text-2)}
+	.note b{color:var(--text);font-weight:600}
+	.note code{background:#fff;border:1px solid var(--line);border-radius:5px;
+		padding:1px 6px;font-size:12px;color:var(--brand-dark)}
+	.err{margin-top:14px;padding:11px 14px;background:var(--danger-soft);color:#C9303E;
+		border-radius:10px;font-size:13px;line-height:1.6;display:none}
+	.err.on{display:block}
+	.err b{font-weight:600}
+	.err .raw{margin-top:7px;padding-top:7px;border-top:1px solid rgba(201,48,62,.16);
+		font-size:11.5px;color:#A8474F;word-break:break-all;line-height:1.7;
+		font-family:'SF Mono',Consolas,monospace}
+	.err .step{margin-top:5px;font-size:12px;color:#A8474F;line-height:1.75;white-space:pre-wrap}
+	.diag{margin-top:14px;text-align:center}
+	.diag button{background:none;border:0;color:var(--brand);font-size:12.5px;
+		font-family:inherit;cursor:pointer;text-decoration:underline;padding:4px 8px}
+	.diag button:hover{color:var(--brand-dark)}
+	.diag button:disabled{color:var(--text-4);cursor:wait;text-decoration:none}
+
+	/* ── 顶栏 ──────────────────────────────────────────── */
+	header{display:flex;align-items:flex-end;justify-content:space-between;
+		flex-wrap:wrap;gap:14px;margin-bottom:22px}
+	header h1{font-size:22px;font-weight:600}
+	header .sub{color:var(--text-3);font-size:12.5px;margin-top:5px}
+	header .sub a{color:var(--brand);text-decoration:none}
+
+	/* ── 统计卡 ────────────────────────────────────────── */
+	.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+	.stat{background:var(--card);border-radius:var(--radius);padding:18px 20px;
+		box-shadow:0 4px 16px rgba(31,45,61,.05);border:1px solid rgba(232,237,245,.9)}
+	.stat .k{font-size:12.5px;color:var(--text-3);margin-bottom:8px}
+	.stat .v{font-size:28px;font-weight:600;line-height:1;letter-spacing:-.5px}
+	.stat.live .v{color:var(--ok)}
+	.stat.ok .v{color:var(--ok)}
+	.stat.no .v{color:var(--text-4)}
+	.stat .u{font-size:12px;color:var(--text-4);margin-left:5px;font-weight:400}
+
+	/* ── 工具栏 ────────────────────────────────────────── */
+	.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+	.search{flex:1;min-width:190px;display:flex;align-items:center;gap:9px;height:42px;
+		background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:0 14px}
+	.search:focus-within{border-color:var(--brand)}
+	.search input{flex:1;border:0;outline:0;background:transparent;font-size:13.5px;
+		font-family:inherit;color:var(--text)}
+	.seg{display:flex;background:var(--card);border:1.5px solid var(--line);
+		border-radius:12px;padding:3px;height:42px}
+	.seg button{border:0;background:transparent;padding:0 15px;border-radius:9px;
+		font-size:13px;font-family:inherit;color:var(--text-2);cursor:pointer;transition:.15s;white-space:nowrap}
+	.seg button.on{background:var(--brand);color:#fff;font-weight:500}
+	.tbtn{height:42px;padding:0 17px;border:1.5px solid var(--line);background:var(--card);
+		border-radius:12px;font-size:13px;font-family:inherit;color:var(--text-2);
+		cursor:pointer;transition:.15s;white-space:nowrap}
+	.tbtn:hover{border-color:var(--brand);color:var(--brand)}
+	.tbtn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line);color:var(--text-4)}
+	.pwd{display:flex;align-items:center;gap:8px;height:42px;background:var(--card);
+		border:1.5px solid var(--line);border-radius:12px;padding:0 13px;font-size:13px;color:var(--text-3)}
+	.pwd input{width:82px;border:0;outline:0;background:transparent;font-family:inherit;
+		font-size:13.5px;color:var(--brand-dark);font-weight:600;letter-spacing:.4px}
+
+	/* ── 表格 ──────────────────────────────────────────── */
+	.panel{background:var(--card);border-radius:var(--radius);overflow:hidden;
+		box-shadow:0 6px 22px rgba(31,45,61,.06);border:1px solid rgba(232,237,245,.9)}
+	table{width:100%;border-collapse:collapse}
+	th{text-align:left;font-size:12px;font-weight:500;color:var(--text-3);
+		padding:14px 18px;background:#FAFCFF;border-bottom:1px solid var(--line);
+		white-space:nowrap;user-select:none}
+	th.sortable{cursor:pointer}
+	th.sortable:hover{color:var(--brand)}
+	th .arrow{opacity:.35;font-size:10px;margin-left:3px}
+	th.asc .arrow,th.desc .arrow{opacity:1;color:var(--brand)}
+	td{padding:14px 18px;border-bottom:1px solid #F2F6FB;font-size:13.5px;vertical-align:middle}
+	tbody tr:last-child td{border-bottom:0}
+	tbody tr:hover{background:#FBFDFF}
+	.mail{font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;
+		text-overflow:ellipsis;max-width:340px}
+	.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;
+		padding:4px 10px;border-radius:20px;white-space:nowrap;font-weight:500}
+	.badge.on{background:var(--ok-soft);color:#12996A}
+	.badge.off{background:#F2F5F9;color:var(--text-4)}
+	/* 在线：绿底 + 会呼吸的圆点，一眼就能和"已登录过"区分开 */
+	.badge.live{background:var(--ok-soft);color:#0B8F5F}
+	.badge.live .dot{animation:beat 1.8s ease-out infinite}
+	@keyframes beat{
+		0%{box-shadow:0 0 0 0 rgba(11,143,95,.5)}
+		70%{box-shadow:0 0 0 5px rgba(11,143,95,0)}
+		100%{box-shadow:0 0 0 0 rgba(11,143,95,0)}
+	}
+	.dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+	.time{color:var(--text-2);white-space:nowrap}
+	.time .rel{color:var(--text-4);font-size:12px;margin-left:7px}
+	.time .seen{color:var(--text-4);font-size:12px;margin-top:3px}
+	.time.none{color:var(--text-4)}
+	.act{display:flex;gap:8px;justify-content:flex-end}
+	.act .mini{flex-shrink:0}
+	.mini{height:32px;padding:0 13px;border:1.5px solid var(--line);background:#fff;
+		border-radius:9px;font-size:12.5px;font-family:inherit;color:var(--text-2);
+		cursor:pointer;transition:.15s;white-space:nowrap}
+	.mini:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+	.mini.reset:hover{border-color:var(--ok);color:#12996A;background:var(--ok-soft)}
+	.mini:disabled{opacity:.5;cursor:not-allowed}
+	.empty{padding:60px 20px;text-align:center;color:var(--text-4);font-size:13.5px}
+	.loading{padding:60px 20px;text-align:center;color:var(--text-3);font-size:13.5px}
+	.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--line);
+		border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;
+		vertical-align:-2px;margin-right:8px}
+	@keyframes sp{to{transform:rotate(360deg)}}
+	.cb{width:16px;height:16px;accent-color:var(--brand);cursor:pointer}
+
+	/* ── 提示条 ────────────────────────────────────────── */
+	#toast{position:fixed;left:50%;bottom:38px;transform:translate(-50%,20px);
+		background:#1F2D3D;color:#fff;padding:13px 22px;border-radius:12px;font-size:13.5px;
+		opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.22);
+		max-width:80vw;text-align:center}
+	#toast.on{opacity:1;transform:translate(-50%,0)}
+	#toast.ok{background:#12996A}
+	#toast.bad{background:#D93A48}
+
+	/* ── 确认框 ────────────────────────────────────────── */
+	#modal{position:fixed;inset:0;background:rgba(23,33,58,.42);display:none;
+		align-items:center;justify-content:center;z-index:100;padding:20px}
+	#modal.on{display:flex}
+	.modal2{position:fixed;inset:0;background:rgba(23,33,58,.42);display:none;
+		align-items:center;justify-content:center;z-index:100;padding:20px;overflow:auto}
+	.modal2.on{display:flex}
+	.mbox{background:#fff;border-radius:20px;padding:30px 30px 24px;max-width:430px;width:100%;
+		box-shadow:0 24px 60px rgba(0,0,0,.22)}
+	.mbox h3{font-size:18px;font-weight:600;margin-bottom:12px}
+	.mbox p{color:var(--text-2);font-size:13.5px;line-height:1.8;margin-bottom:8px}
+	.mbox .hl{color:var(--brand-dark);font-weight:600;word-break:break-all}
+	.mbox .warn{background:#FFF8E8;color:#8A6100;padding:11px 14px;border-radius:10px;
+		font-size:12.5px;line-height:1.7;margin:14px 0 20px}
+	.mact{display:flex;gap:10px;justify-content:flex-end}
+	.mact button{height:42px;padding:0 20px;border-radius:11px;font-size:13.5px;
+		font-family:inherit;cursor:pointer;border:1.5px solid var(--line);
+		background:#fff;color:var(--text-2);transition:.15s}
+	.mact button.go{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+	.mact button.go:hover{background:var(--brand-dark)}
+	.mact button.go.danger{background:var(--danger);border-color:var(--danger)}
+	.mact button.go.danger:hover{background:#E8455A}
+
+	/* ── 建号表单 ──────────────────────────────────────── */
+	.frow{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+	.frow label{width:74px;color:var(--text-2);font-size:13.5px;flex-shrink:0}
+	.frow input{flex:1;height:42px;border:1.5px solid var(--line);border-radius:11px;
+		padding:0 13px;font-size:13.5px;font-family:inherit;color:var(--text);
+		outline:0;background:#FBFCFE;transition:.15s}
+	.frow input:focus{border-color:var(--brand);background:#fff}
+	.frow .tip{font-size:12px;color:var(--text-4);flex-shrink:0}
+	.frow .fixed{color:var(--brand-dark);font-weight:600}
+	#doneList{width:100%;height:210px;border:1.5px solid var(--line);border-radius:12px;
+		padding:13px 15px;font-size:13px;font-family:'SF Mono',Consolas,monospace;
+		line-height:1.9;color:var(--text);background:#FAFCFF;resize:vertical;outline:0;
+		margin-bottom:18px}
+	#doneList:focus{border-color:var(--brand)}
+	.mbox.wide{max-width:520px}
+	.mini.del:hover{border-color:var(--danger);color:#C9303E;background:var(--danger-soft)}
+	@media(max-width:720px){
+		.stats{grid-template-columns:1fr 1fr}
+		.hide-s{display:none}
+		td,th{padding:12px 13px}
+	}
+</style>
+</head>
+<body>
+
+<!-- ══ 启动中 / 本地服务没跑起来 ══════════════════════════ -->
+<div id="gate">
+	<h1>账号管理</h1>
+	<div class="sub">jack 的 App · Supabase 后台</div>
+
+	<div style="text-align:center;padding:26px 0 4px">
+		<span class="spin" id="gateSpin"></span>
+		<span id="gateMsg" style="color:var(--text-2);font-size:13.5px">正在连接本地服务…</span>
+	</div>
+
+	<div class="err" id="gateErr"></div>
+</div>
+
+<!-- ══ 主界面 ═══════════════════════════════════════════ -->
+<div class="wrap" id="app" hidden>
+	<header>
+		<div>
+			<h1>账号管理</h1>
+			<div class="sub" id="projLine"></div>
+		</div>
+		<div class="sub" style="text-align:right">
+			<div id="syncLine">—</div>
+		</div>
+	</header>
+
+	<div class="stats">
+		<div class="stat"><div class="k">账号总数</div><div class="v" id="sTotal">—</div></div>
+		<div class="stat live" title="app 每分钟报一次心跳；3 分钟没动静就算离线">
+			<div class="k">现在在线</div><div class="v" id="sOnline">—</div></div>
+		<div class="stat ok"><div class="k">已经登录过</div><div class="v" id="sUsed">—</div></div>
+		<div class="stat no"><div class="k">发了还没用</div><div class="v" id="sIdle">—</div></div>
+	</div>
+
+	<div class="bar">
+		<div class="search">
+			<span style="color:var(--text-4);font-size:15px">🔍</span>
+			<input id="q" placeholder="搜索账号…">
+		</div>
+		<div class="seg" id="seg">
+			<button data-f="all" class="on">全部</button>
+			<button data-f="online">在线</button>
+			<button data-f="used">已登录</button>
+			<button data-f="idle">没用过</button>
+		</div>
+		<div class="pwd">重置为 <input id="pwdInput" value="jackjie" spellcheck="false"></div>
+		<button class="tbtn" id="newBtn">＋ 批量建号</button>
+		<button class="tbtn" id="bulkBtn" disabled>重置选中 (0)</button>
+		<button class="tbtn" id="refreshBtn">刷新</button>
+	</div>
+
+	<div class="panel">
+		<table>
+			<thead>
+				<tr>
+					<th style="width:42px"><input type="checkbox" class="cb" id="checkAll"></th>
+					<th class="sortable" data-k="email">账号<span class="arrow">▼</span></th>
+					<th class="sortable" data-k="state" style="width:110px">状态<span class="arrow">▼</span></th>
+					<th class="sortable hide-s" data-k="created_at" style="width:150px">创建时间<span class="arrow">▼</span></th>
+					<th class="sortable" data-k="last_sign_in_at" style="width:210px">最后登录<span class="arrow">▼</span></th>
+					<th style="width:216px;text-align:right">操作</th>
+				</tr>
+			</thead>
+			<tbody id="tbody">
+				<tr><td colspan="6" class="loading"><span class="spin"></span>正在读取…</td></tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!-- ══ 批量建号 ═════════════════════════════════════════ -->
+<div id="newModal" class="modal2">
+	<div class="mbox">
+		<h3>批量建号</h3>
+		<p>按 <span class="hl">jack-xxx</span> 的规则自动生成账号名，<b>xxx = 3 位数字或小写字母</b>（例：jack-j12、jack-o09、jack-25q）。</p>
+		<div style="height:18px"></div>
+
+		<div class="frow">
+			<label>数量</label>
+			<input id="newCount" type="number" value="5" min="1" max="100">
+			<span class="tip">最多 100 个</span>
+		</div>
+		<div class="frow">
+			<label>密码</label>
+			<input id="newPwd" value="jackjie" spellcheck="false">
+			<span class="tip">统一初始密码</span>
+		</div>
+		<div class="frow">
+			<label>域名</label>
+			<input id="newDomain" value="jack.app" spellcheck="false">
+		</div>
+
+		<div class="warn">Supabase 的账号必须是邮箱格式，所以完整账号长这样：<br>
+			<b id="preview">jack-j12@jack.app</b><br>
+			<span style="color:var(--text-3)">永远不发邮件，域名只是账号名的一部分。</span>
+			<span style="color:var(--text-3)">账号名统一小写（Supabase 会转小写），登录时大小写不敏感。</span></div>
+
+		<div class="mact">
+			<button id="newCancel">取消</button>
+			<button id="newOk" class="go">开始建号</button>
+		</div>
+	</div>
+</div>
+
+<!-- ══ 建号结果 ═════════════════════════════════════════ -->
+<div id="doneModal" class="modal2">
+	<div class="mbox wide">
+		<h3>建好了 <span id="doneN">0</span> 个账号</h3>
+		<p>密码统一是 <span class="hl" id="donePwd">jackjie</span>。把下面这些发给用户就行：</p>
+		<div style="height:14px"></div>
+		<textarea id="doneList" readonly spellcheck="false"></textarea>
+		<div class="mact">
+			<button id="doneClose">关闭</button>
+			<button id="doneCopy" class="go">复制全部</button>
+		</div>
+	</div>
+</div>
+
+<div id="toast"></div>
+
+<div id="modal">
+	<div class="mbox">
+		<h3 id="mTitle">确认</h3>
+		<p id="mBody"></p>
+		<div class="warn" id="mWarn"></div>
+		<div class="mact">
+			<button id="mCancel">取消</button>
+			<button id="mOk" class="go">确认</button>
+		</div>
+	</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   账号管理后台 —— 单文件，直接双击打开就能用，不用装任何东西。
+
+   它做两件事（都走 Supabase 的 Admin API）：
+     读   GET    /auth/v1/admin/users?page=N&per_page=200   拿账号 + 最后登录时间
+     改   PUT    /auth/v1/admin/users/{id}  {"password":…}  重置密码
+
+   密钥不进这个文件：打开页面时你粘贴一次，只存在浏览器 localStorage 里。
+   ══════════════════════════════════════════════════════════════════ */
+
+// 空字符串 = 所有请求都发给「本地服务」，由它带着密钥转发给 Supabase。
+//
+// 【为什么不直接请求 Supabase】
+// Supabase 的网关会检查 User-Agent，认出是浏览器就直接拒掉 sb_secret_ 密钥：
+//     {"message":"Forbidden use of secret API key in browser"}
+// 实测：同一个密钥，带浏览器 UA → 401 被拒；不带 → 200 通过。
+// 所以浏览器里**永远**用不了这把密钥，页面怎么写都没用。
+// 本地服务（supabase/admin-server.mjs）发的是自己的 UA，就没这个问题。
+const SUPABASE_URL = '';
+
+const KEY_LS = 'jackAdminKey';
+const PWD_LS = 'jackAdminPwd';
+
+let KEY = '';
+let users = [];          // 服务端原样返回的账号
+let rows = [];           // 加上 state / _k 之后的展示行
+let filter = 'all';
+let sortKey = 'created_at';
+let sortAsc = true;
+let picked = new Set();
+let busy = false;
+
+const $ = (s) => document.querySelector(s);
+
+/* ── 密钥清洗 / 体检 ─────────────────────────────────────────────
+   粘贴密钥最常见的两个坑：
+     1. 带上了换行、空格、零宽字符（从网页复制经常有）→ 服务端判成 Invalid API key
+     2. 拿错了那把（publishable / anon 是公开密钥，没有管理权限）
+   所以在发请求之前先清一遍、认一遍，报错时能直接说清是哪种。 */
+function cleanKey(s) {
+	return String(s || '').replace(/[\s\u00A0\u200B\u200C\u200D\u2060\uFEFF]+/g, '');
+}
+
+function keyKind(k) {
+	if (/^sb_secret_/.test(k)) return { name: '新版 secret 密钥', good: true };
+	if (/^sb_publishable_/.test(k)) return {
+		name: '新版 publishable（公开）密钥', good: false,
+		why: '你拿的是【Publishable key】，那是给客户端用的公开密钥，没有管理权限。要在同一个页面往下找【Secret keys】，点 Reveal / Create 拿 sb_secret_… 那一把。'
+	};
+	if (/^eyJ/.test(k)) {
+		try {
+			const part = k.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+			const payload = JSON.parse(decodeURIComponent(escape(atob(part))));
+			if (payload.role === 'service_role') return { name: '旧版 service_role 密钥', good: true };
+			if (payload.role === 'anon') return {
+				name: '旧版 anon 密钥', good: false,
+				why: '你拿的是【anon public】那把，那是公开密钥，没有管理权限。要用同一个页面里的【service_role】。'
+			};
+			return { name: '旧版 JWT（角色 ' + (payload.role || '未知') + '）', good: true };
+		} catch (e) {
+			return { name: '旧版 JWT（解不开，交给服务端判断）', good: true };
+		}
+	}
+	if (k.length < 30) return {
+		name: '太短，不像密钥', good: false,
+		why: 'Supabase 的密钥一般 40 位以上。多半是没复制全 —— 回去重新复制一次。'
+	};
+	return { name: '格式不认识（交给服务端判断）', good: true };
+}
+
+/* ── 请求 ───────────────────────────────────────────────────────── */
+async function api(path, opts) {
+	opts = opts || {};
+	// 不用带密钥 —— 本地服务会加上（浏览器里带 secret 密钥会被 Supabase 拒掉）
+	const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+
+	let res;
+	try {
+		res = await fetch(SUPABASE_URL + path, Object.assign({}, opts, { headers }));
+	} catch (e) {
+		// fetch 直接抛 = 根本没连上（断网 / 代理 / 浏览器拦了跨域）
+		const m = (e && e.message) || String(e);
+		const err = new Error('连不上 Supabase');
+		err.raw = m;
+		err.network = true;
+		throw err;
+	}
+
+	const text = await res.text();
+	let data = null;
+	try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+
+	if (!res.ok) {
+		const err = new Error(pickMsg(res.status, data, text));
+		err.status = res.status;
+		err.code = (data && (data.error_code || data.code)) || '';
+		err.raw = (typeof data === 'string' ? data : JSON.stringify(data)) || text || '';
+		throw err;
+	}
+	return data;
+}
+
+/** 把服务端英文报错翻成中文，并且尽量说清「该怎么办」 */
+function pickMsg(status, data, raw) {
+	const code = (data && (data.error_code || data.code)) || '';
+	const said = (data && (data.msg || data.message || data.hint)) || raw || '';
+
+	// 先认服务端给的语义码，比状态码准
+	if (code === 'not_admin') return '这把密钥没有管理权限';
+	if (code === 'no_authorization') return '请求里没带上密钥';
+	if (code === 'invalid_credentials') return '密钥无效';
+	if (/Invalid API key/i.test(said)) return '密钥无效（不是这个项目的，或者没复制全）';
+	if (/No API key found/i.test(said)) return '没有带上密钥';
+
+	if (status === 401) return '密钥无效或已失效';
+	if (status === 403) return '这把密钥没有管理权限';
+	if (status === 404) return '找不到这个账号，可能已经被删了';
+	if (status === 422) return '提交的信息不合法（密码至少 6 位）';
+	if (status === 429) return '操作太频繁了，等一分钟再试';
+	if (status >= 500) return 'Supabase 服务器出错了，稍后再试';
+	return said || ('请求失败 HTTP ' + status);
+}
+
+async function fetchAllUsers() {
+	const all = [];
+	for (let page = 1; page <= 60; page++) {
+		const r = await api('/auth/v1/admin/users?page=' + page + '&per_page=200');
+		const batch = Array.isArray(r) ? r : ((r && r.users) || []);
+		if (!batch.length) break;
+		all.push.apply(all, batch);
+		if (batch.length < 200) break;
+	}
+	return all;
+}
+
+/* ── 小工具 ─────────────────────────────────────────────────────── */
+function esc(s) {
+	return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+		({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function fmt(iso) {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (isNaN(d)) return String(iso);
+	const p = (n) => String(n).padStart(2, '0');
+	return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+		' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function rel(iso) {
+	if (!iso) return '';
+	const t = new Date(iso).getTime();
+	if (isNaN(t)) return '';
+	let s = (Date.now() - t) / 1000;
+	if (s < 0) return '刚刚';
+	if (s < 90) return '刚刚';
+	if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+	if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
+	if (s < 86400 * 30) return Math.floor(s / 86400) + ' 天前';
+	if (s < 86400 * 365) return Math.floor(s / 86400 / 30) + ' 个月前';
+	return Math.floor(s / 86400 / 365) + ' 年前';
+}
+function toast(msg, kind) {
+	const el = $('#toast');
+	el.textContent = msg;
+	el.className = 'on ' + (kind || '');
+	clearTimeout(toast._t);
+	toast._t = setTimeout(() => { el.className = kind || ''; }, 2600);
+}
+function ask(opts) {
+	return new Promise((resolve) => {
+		$('#mTitle').textContent = opts.title;
+		$('#mBody').innerHTML = opts.body;
+		const w = $('#mWarn');
+		if (opts.warn) { w.innerHTML = opts.warn; w.style.display = ''; }
+		else { w.style.display = 'none'; }
+		const ok = $('#mOk');
+		ok.textContent = opts.okText || '确认';
+		ok.className = 'go' + (opts.danger ? ' danger' : '');
+		$('#modal').classList.add('on');
+		const done = (v) => {
+			$('#modal').classList.remove('on');
+			ok.onclick = null; $('#mCancel').onclick = null;
+			resolve(v);
+		};
+		ok.onclick = () => done(true);
+		$('#mCancel').onclick = () => done(false);
+	});
+}
+const pwd = () => ($('#pwdInput').value.trim() || 'jackjie');
+
+/* ── 在线判定 ───────────────────────────────────────────────────────
+ * Supabase 不提供「谁在线」的接口（/admin/users/{id}/sessions、/admin/sessions
+ * 全是 404），所以是 app 主动报的：它每分钟往自己的 user_metadata.last_seen
+ * 写一次时间戳（见 utils/auth.js 的 heartbeat()）。
+ * 后台拉 /admin/users 时本来就带着 user_metadata，不用多发一次请求。
+ * 3 分钟没动静就算离线 —— 心跳 60 秒一次，容得下丢两次。
+ */
+const ONLINE_WINDOW = 3 * 60 * 1000;
+
+/* 排序用的优先级：在线排最前，没用过的排最后 */
+const STATE_RANK = { online: 0, used: 1, idle: 2 };
+
+/* ── 渲染 ───────────────────────────────────────────────────────── */
+function build() {
+	const now = Date.now();
+	rows = users.map((u) => {
+		const seen = (u.user_metadata && u.user_metadata.last_seen) || '';
+		const seenMs = seen ? Date.parse(seen) : NaN;
+		const online = !isNaN(seenMs) && (now - seenMs) < ONLINE_WINDOW;
+		return {
+			id: u.id,
+			email: u.email || '(没邮箱)',
+			created_at: u.created_at || '',
+			last_sign_in_at: u.last_sign_in_at || '',
+			last_seen: seen,
+			online: online,
+			// 三选一、互不重叠：在线 / 已登录（登录过但现在不在线）/ 没用过
+			state: online ? 'online' : (u.last_sign_in_at ? 'used' : 'idle')
+		};
+	});
+}
+
+function visible() {
+	const q = $('#q').value.trim().toLowerCase();
+	let list = rows.filter((r) => {
+		if (filter !== 'all' && r.state !== filter) return false;
+		if (q && r.email.toLowerCase().indexOf(q) < 0) return false;
+		return true;
+	});
+	const dir = sortAsc ? 1 : -1;
+	list.sort((a, b) => {
+		let x = a[sortKey], y = b[sortKey];
+		if (sortKey === 'state') { x = STATE_RANK[a.state]; y = STATE_RANK[b.state]; }
+		if (sortKey === 'last_sign_in_at') { x = x || ''; y = y || ''; }
+		if (x === y) return a.email.localeCompare(b.email);
+		return x > y ? dir : -dir;
+	});
+	return list;
+}
+
+function render() {
+	const list = visible();
+
+	$('#sTotal').textContent = rows.length;
+	$('#sOnline').textContent = rows.filter((r) => r.online).length;
+	$('#sUsed').textContent = rows.filter((r) => r.last_sign_in_at).length;
+	$('#sIdle').textContent = rows.filter((r) => !r.last_sign_in_at).length;
+
+	const tb = $('#tbody');
+	if (!list.length) {
+		tb.innerHTML = '<tr><td colspan="6" class="empty">' +
+			(rows.length ? '没有符合条件的账号' : '一个账号都还没有') + '</td></tr>';
+	} else {
+		tb.innerHTML = list.map((r) => {
+			const badge = r.state === 'online'
+				? '<span class="badge live"><span class="dot"></span>在线</span>'
+				: (r.state === 'used'
+					? '<span class="badge on"><span class="dot"></span>已登录</span>'
+					: '<span class="badge off"><span class="dot"></span>没用过</span>');
+			// 不在线但有心跳记录 → 补一行"最后活跃"，好知道他是刚走还是一周没来了
+			const seen = (r.last_seen && !r.online)
+				? '<div class="seen">最后活跃 ' + rel(r.last_seen) + '</div>' : '';
+			return '<tr>' +
+				'<td><input type="checkbox" class="cb rowcb" data-id="' + r.id + '"' +
+					(picked.has(r.id) ? ' checked' : '') + '></td>' +
+				'<td><div class="mail">' + esc(r.email) + '</div></td>' +
+				'<td>' + badge + '</td>' +
+				'<td class="time hide-s">' + (fmt(r.created_at) || '—') + '</td>' +
+				'<td class="time' + (r.last_sign_in_at ? '' : ' none') + '">' +
+					(r.last_sign_in_at
+						? fmt(r.last_sign_in_at) + '<span class="rel">' + rel(r.last_sign_in_at) + '</span>' + seen
+						: '还没登录过') +
+				'</td>' +
+				'<td><div class="act">' +
+					'<button class="mini copy" data-mail="' + esc(r.email) + '">复制</button>' +
+					'<button class="mini reset" data-id="' + r.id + '">重置</button>' +
+					'<button class="mini del" data-id="' + r.id + '">删除</button>' +
+				'</div></td>' +
+			'</tr>';
+		}).join('');
+	}
+
+	// 表头排序状态
+	document.querySelectorAll('th.sortable').forEach((th) => {
+		th.classList.remove('asc', 'desc');
+		if (th.dataset.k === sortKey) th.classList.add(sortAsc ? 'asc' : 'desc');
+	});
+	// 全选框
+	const visIds = list.map((r) => r.id);
+	const on = visIds.filter((id) => picked.has(id)).length;
+	const ca = $('#checkAll');
+	ca.checked = visIds.length > 0 && on === visIds.length;
+	ca.indeterminate = on > 0 && on < visIds.length;
+	$('#bulkBtn').textContent = '重置选中 (' + picked.size + ')';
+	$('#bulkBtn').disabled = picked.size === 0 || busy;
+}
+
+function setBusy(v) {
+	busy = v;
+	document.querySelectorAll('.mini').forEach((b) => { b.disabled = v; });
+	$('#bulkBtn').disabled = v || picked.size === 0;
+	$('#refreshBtn').disabled = v;
+}
+
+/* ── 动作 ───────────────────────────────────────────────────────── */
+async function refresh() {
+	try {
+		$('#tbody').innerHTML = '<tr><td colspan="6" class="loading"><span class="spin"></span>正在读取…</td></tr>';
+		users = await fetchAllUsers();
+		build();
+		picked.clear();
+		render();
+		$('#syncLine').textContent = '刚刚同步 · ' + rows.length + ' 个账号';
+	} catch (e) {
+		$('#tbody').innerHTML = '<tr><td colspan="6" class="empty" style="color:var(--danger)">' +
+			esc(e.message) + '</td></tr>';
+		toast(e.message, 'bad');
+	}
+}
+
+async function resetMany(list) {
+	if (busy || !list.length) return;
+	setBusy(true);
+	let ok = 0, fail = 0, firstErr = '';
+	for (const u of list) {
+		try {
+			await api('/auth/v1/admin/users/' + u.id, {
+				method: 'PUT',
+				body: JSON.stringify({ password: pwd() })
+			});
+			ok++;
+		} catch (e) {
+			fail++;
+			if (!firstErr) firstErr = e.message;
+		}
+	}
+	setBusy(false);
+	picked.clear();
+	render();
+	if (fail === 0) toast('✅ 已把 ' + ok + ' 个账号的密码重置为 ' + pwd(), 'ok');
+	else toast('成功 ' + ok + ' 个，失败 ' + fail + ' 个：' + firstErr, 'bad');
+}
+
+/* ── 批量建号 ───────────────────────────────────────────────────── */
+// 账号名规则：jack- + 3 位（数字或字母），例 jack-j12 / jack-o09 / jack-25q
+//
+// ★ 只用小写：Supabase 会把账号名统一转成小写存储
+//   （实测发 CaseTest-ABC@jack.app 进去，存下来是 casetest-abc@jack.app）
+//   所以生成小写，界面上看到的就是实际存下来的，不会对不上。
+//   用户登录时大小写不敏感（实测 CESHI@EXAMPLE.COM 也能登），发号时写大写也照样能登。
+const NAME_CHARS = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+function genAccount(domain, taken) {
+	for (let t = 0; t < 500; t++) {
+		let s = '';
+		for (let i = 0; i < 3; i++) s += NAME_CHARS[Math.floor(Math.random() * NAME_CHARS.length)];
+		const mail = 'jack-' + s + '@' + domain;
+		if (!taken.has(mail.toLowerCase())) { taken.add(mail.toLowerCase()); return mail; }
+	}
+	throw new Error('生成不出不重复的账号名了，先清掉一些旧账号');
+}
+
+async function createMany(n, password, domain) {
+	const taken = new Set(rows.map((r) => r.email.toLowerCase()));
+	const made = [];
+	let fail = 0, firstErr = '';
+	for (let i = 0; i < n; i++) {
+		const mail = genAccount(domain, taken);
+		try {
+			await api('/auth/v1/admin/users', {
+				method: 'POST',
+				body: JSON.stringify({ email: mail, password: password, email_confirm: true })
+			});
+			made.push(mail);
+		} catch (e) {
+			fail++;
+			if (!firstErr) firstErr = e.message;
+		}
+	}
+	return { made: made, fail: fail, firstErr: firstErr };
+}
+
+function bindCreate() {
+	const dom = () => ($('#newDomain').value.trim().replace(/^@/, '') || 'jack.app');
+	const syncPreview = () => { $('#preview').textContent = 'jack-j12@' + dom(); };
+
+	$('#newDomain').addEventListener('input', syncPreview);
+
+	$('#newBtn').addEventListener('click', () => {
+		$('#newPwd').value = pwd();
+		syncPreview();
+		$('#newModal').classList.add('on');
+	});
+	$('#newCancel').addEventListener('click', () => $('#newModal').classList.remove('on'));
+
+	$('#newOk').addEventListener('click', async () => {
+		const n = Math.max(1, Math.min(100, parseInt($('#newCount').value, 10) || 1));
+		const pw = $('#newPwd').value.trim() || 'jackjie';
+		const btn = $('#newOk');
+		btn.disabled = true;
+		btn.textContent = '建号中…';
+		try {
+			const r = await createMany(n, pw, dom());
+			$('#newModal').classList.remove('on');
+			$('#doneN').textContent = r.made.length;
+			$('#donePwd').textContent = pw;
+			$('#doneList').value = r.made.join('\n');
+			$('#doneModal').classList.add('on');
+			if (r.fail) toast('成功 ' + r.made.length + ' 个，失败 ' + r.fail + ' 个：' + r.firstErr, 'bad');
+			await refresh();
+		} catch (e) {
+			toast(e.message, 'bad');
+		} finally {
+			btn.disabled = false;
+			btn.textContent = '开始建号';
+		}
+	});
+
+	$('#doneClose').addEventListener('click', () => $('#doneModal').classList.remove('on'));
+	$('#doneCopy').addEventListener('click', async () => {
+		try {
+			await navigator.clipboard.writeText($('#doneList').value);
+			toast('已复制 ' + $('#doneN').textContent + ' 个账号', 'ok');
+		} catch (e) {
+			$('#doneList').focus();
+			$('#doneList').select();
+			toast('复制失败，已全选，按 Ctrl+C', 'bad');
+		}
+	});
+}
+
+/* ── 事件绑定 ───────────────────────────────────────────────────── */
+function bindApp() {
+	$('#q').addEventListener('input', render);
+	$('#refreshBtn').addEventListener('click', refresh);
+	$('#pwdInput').addEventListener('change', () => {
+		try { localStorage.setItem(PWD_LS, pwd()); } catch (e) {}
+	});
+
+	$('#seg').addEventListener('click', (e) => {
+		const b = e.target.closest('button');
+		if (!b) return;
+		filter = b.dataset.f;
+		document.querySelectorAll('#seg button').forEach((x) => x.classList.toggle('on', x === b));
+		render();
+	});
+
+	document.querySelectorAll('th.sortable').forEach((th) => {
+		th.addEventListener('click', () => {
+			const k = th.dataset.k;
+			if (sortKey === k) sortAsc = !sortAsc;
+			else { sortKey = k; sortAsc = (k === 'email' || k === 'state'); }
+			render();
+		});
+	});
+
+	$('#checkAll').addEventListener('change', (e) => {
+		const list = visible();
+		if (e.target.checked) list.forEach((r) => picked.add(r.id));
+		else list.forEach((r) => picked.delete(r.id));
+		render();
+	});
+
+	$('#tbody').addEventListener('click', async (e) => {
+		const cb = e.target.closest('.rowcb');
+		if (cb) {
+			if (cb.checked) picked.add(cb.dataset.id); else picked.delete(cb.dataset.id);
+			render();
+			return;
+		}
+		const copy = e.target.closest('.copy');
+		if (copy) {
+			const t = copy.dataset.mail;
+			try {
+				await navigator.clipboard.writeText(t);
+				toast('已复制：' + t, 'ok');
+			} catch (err) {
+				toast('复制失败，手动选一下吧：' + t, 'bad');
+			}
+			return;
+		}
+		const rs = e.target.closest('.reset');
+		if (rs) {
+			const u = rows.find((r) => r.id === rs.dataset.id);
+			if (!u) return;
+			const go = await ask({
+				title: '重置密码',
+				body: '把 <span class="hl">' + esc(u.email) + '</span> 的密码重置为 <span class="hl">' + esc(pwd()) + '</span>？',
+				warn: '重置后旧密码立刻失效，用户要用新密码登录。',
+				okText: '确认重置'
+			});
+			if (go) await resetMany([u]);
+			return;
+		}
+
+		const dl = e.target.closest('.del');
+		if (dl) {
+			const u = rows.find((r) => r.id === dl.dataset.id);
+			if (!u) return;
+			const go = await ask({
+				title: '删除账号',
+				body: '把 <span class="hl">' + esc(u.email) + '</span> 永久删掉？',
+				warn: '删了就找不回来了，这个账号再也不能登录。',
+				okText: '确认删除',
+				danger: true
+			});
+			if (!go) return;
+			setBusy(true);
+			try {
+				await api('/auth/v1/admin/users/' + u.id, { method: 'DELETE' });
+				toast('已删除 ' + u.email, 'ok');
+				await refresh();
+			} catch (err) {
+				toast(err.message, 'bad');
+			}
+			setBusy(false);
+		}
+	});
+
+	$('#bulkBtn').addEventListener('click', async () => {
+		const list = rows.filter((r) => picked.has(r.id));
+		if (!list.length) return;
+		const go = await ask({
+			title: '批量重置密码',
+			body: '把选中的 <span class="hl">' + list.length + '</span> 个账号的密码都重置为 <span class="hl">' + esc(pwd()) + '</span>？',
+			warn: '这些账号的旧密码会全部立刻失效。',
+			okText: '确认重置 ' + list.length + ' 个',
+			danger: true
+		});
+		if (go) await resetMany(list);
+	});
+
+	$('#clearKey') && $('#clearKey').addEventListener('click', (e) => {
+		e.preventDefault();
+		try { localStorage.removeItem(KEY_LS); } catch (err) {}
+		location.reload();
+	});
+
+	bindCreate();
+}
+
+/* ── 报错展示 ───────────────────────────────────────────────────── */
+function gateFail(msg, extra) {
+	const el = $('#gateErr');
+	el.innerHTML = '<b>' + esc(msg) + '</b>' + (extra || '');
+	el.classList.add('on');
+}
+function keyFoot(k, kind) {
+	return '<div class="raw">你贴的密钥：' + esc(k.slice(0, 18)) + '… 共 ' + k.length +
+		' 位，识别为【' + esc(kind.name) + '】</div>';
+}
+
+/* ── 进入：先问本地服务，再放行 ─────────────────────────────────── */
+async function enter() {
+	$('#gateErr').classList.remove('on');
+	const msg = $('#gateMsg');
+	const spin = $('#gateSpin');
+	if (msg) msg.textContent = '正在连接本地服务…';
+	if (spin) spin.style.display = '';
+
+	try {
+		const r = await fetch('/api/info');
+		if (!r.ok) throw new Error('本地服务返回 HTTP ' + r.status);
+		const info = await r.json();
+
+		if (!info.ok) {
+			if (spin) spin.style.display = 'none';
+			if (msg) msg.textContent = '本地服务起来了，但连不上 Supabase';
+			const why = info.error || ('服务端说：' + (info.upstreamBody || ('HTTP ' + info.upstreamStatus)));
+			return gateFail('连不上 Supabase',
+				'<div class="raw">密钥：' + esc(info.keyKind || '?') + '（' + (info.keyLen || 0) + ' 位）</div>' +
+				'<div class="raw">' + esc(String(why).slice(0, 300)) + '</div>' +
+				'<div class="raw">去检查 C:\\Users\\<你>\\.jack-admin\\supabase-secret.txt 里的密钥对不对。</div>');
+		}
+
+		$('#gate').hidden = true;
+		$('#app').hidden = false;
+		$('#projLine').textContent = info.url.replace('https://', '') + ' · ' + info.keyKind;
+		bindApp();
+		await refresh();
+	} catch (e) {
+		if (spin) spin.style.display = 'none';
+		if (msg) msg.textContent = '连不上本地服务';
+		gateFail('本地服务没在跑',
+			'<div class="raw">' + esc((e && e.message) || String(e)) + '</div>' +
+			'<div class="raw">这个页面必须通过本地服务打开，<b>不能直接双击 admin.html</b>。<br><br>' +
+			'请双击：<b>supabase\\启动后台.bat</b><br>' +
+			'它会自动起服务并打开 http://127.0.0.1:8787/</div>');
+	}
+}
+
+/* ── 启动 ───────────────────────────────────────────────────────── */
+(function boot() {
+	let savedPwd = '';
+	try {
+		// 密钥不再存在浏览器里了（浏览器用不了），把以前存的清掉
+		localStorage.removeItem(KEY_LS);
+		savedPwd = localStorage.getItem(PWD_LS) || '';
+	} catch (e) {}
+	if (savedPwd) $('#pwdInput').value = savedPwd;
+
+	// 这个页面是本地服务发出来的，所以它一定在跑 —— 直接问它要数据
+	enter();
+})();
+</script>
+</body>
+</html>
