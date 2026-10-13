@@ -8,7 +8,7 @@
 				<view class="mp-id-row">
 					<text class="mp-id">本机编号：{{ deviceNo }}</text>
 				</view>
-				<text class="mp-slogan">数据只存在这台设备 · 不联网不注册</text>
+				<text class="mp-slogan">数据只存在这台设备 · 账号由管理员开通</text>
 			</view>
 		</view>
 
@@ -72,6 +72,12 @@
 				<text class="mp-row-extra">{{ fsLabel }}</text>
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
+			<view class="mp-row" @click="goChangePassword">
+				<uni-icons type="locked" size="18" color="var(--text-secondary)" />
+				<text class="mp-row-title">修改密码</text>
+				<text class="mp-row-extra">改成自己的</text>
+				<uni-icons type="right" size="12" color="var(--text-weak)" />
+			</view>
 			<view class="mp-row" @click="openHelp">
 				<uni-icons type="help-filled" size="18" color="var(--text-secondary)" />
 				<text class="mp-row-title">帮助与反馈</text>
@@ -90,6 +96,9 @@
 				<uni-icons type="right" size="12" color="var(--text-weak)" />
 			</view>
 		</view>
+
+		<!-- 版本号：用户报问题时能直接念出来；点一下复制，省得手打 -->
+		<text class="mp-version" @click="copyVersion">{{ versionText }}</text>
 
 		<!-- 备份与恢复弹层 -->
 		<data-backup-sheet :visible="backupVisible" @close="backupVisible = false" />
@@ -117,6 +126,7 @@ import { fsVar, refreshFontScale, SCALES, setFontScaleKey, fontScaleLabel } from
 import { getAllNotes, calcStreak } from '@/utils/thought-notes.js'
 import { listTimers, TIMER_STATUS } from '@/api/countdown.js'
 import { currentUser, signOut } from '@/utils/auth.js'
+import { appVersionText } from '@/utils/app-version.js'
 
 const themeMode = ref(getAppMode())
 const isThoughtTheme = computed(() => themeMode.value === CONTENT_MODE.THOUGHT)
@@ -133,6 +143,17 @@ const stats = computed(() => [
 	{ label: '文章', value: counted.value.notes, icon: 'compose', color: '#8B5CF6' },
 	{ label: '完成', value: counted.value.done, icon: 'checkmarkempty', color: '#27C68A' }
 ])
+
+/** 版本号：App 端来自 manifest.json，H5 预览回退到常量 */
+const versionText = ref(appVersionText())
+
+/** 点一下复制，用户报问题时直接粘给我，不用手打 */
+function copyVersion() {
+	uni.setClipboardData({
+		data: `jack会员分享 ${versionText.value}`,
+		success: () => uni.showToast({ title: '版本号已复制', icon: 'none' })
+	})
+}
 
 /** 本机编号：没有账号体系，这里给这台设备生成本地标识并一直用它 */
 function ensureDeviceNo() {
@@ -181,6 +202,15 @@ function openArchive() {
 /** 关于我：整页（原来是个底部弹层，他要求改成跳页） */
 function openAbout() {
 	uni.navigateTo({ url: '/pages/about/index' })
+}
+
+/** 修改密码：已登录状态下自助改，不需要邮箱（见 utils/auth.js 的 changePassword） */
+function goChangePassword() {
+	if (!accountEmail.value) {
+		uni.showToast({ title: '登录状态已失效，重新登录一下', icon: 'none' })
+		return
+	}
+	uni.navigateTo({ url: '/pages/change-password/index' })
 }
 
 /** 帮助与反馈：整页（里面是能加到他的微信联系方式） */
@@ -479,5 +509,15 @@ onShow(() => {
 		font-size: calc(24rpx * var(--fs, 1));
 		color: var(--text-aux);
 		margin-right: 10rpx;
+	}
+
+	/* 版本号：卡片下面一行小字，居中、不抢眼，但要能一眼找到 */
+	.mp-version {
+		display: block;
+		margin: 32rpx 0 12rpx;
+		text-align: center;
+		font-size: calc(22rpx * var(--fs, 1));
+		color: var(--text-weak);
+		letter-spacing: 1rpx;
 	}
 </style>

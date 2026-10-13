@@ -15,7 +15,7 @@ app.$mount()
 import {
 	createSSRApp
 } from 'vue'
-import { guardSession } from './utils/auth.js'
+import { guardSession, heartbeat } from './utils/auth.js'
 export function createApp() {
 	const app = createSSRApp(App)
 	// 全局登录闸门：没登录时任何页面一显示就被换回登录页（H5 的返回键和改 hash 都绕不过）。
@@ -23,6 +23,9 @@ export function createApp() {
 	app.mixin({
 		onShow() {
 			guardSession()
+			// 顺手报一次心跳：切页面本身就是"人在用"的信号。
+			// 内部有 60 秒节流，切得再勤也只会每分钟发一次。
+			heartbeat()
 		}
 	})
 	return {

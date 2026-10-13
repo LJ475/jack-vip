@@ -1,7 +1,12 @@
 <script>
 	import { applyLockScreenFlags } from './api/countdown.js'
 	import { resetAppMode } from './utils/app-mode.js'
-	import { ensureSession } from './utils/auth.js'
+	import { ensureSession, heartbeat } from './utils/auth.js'
+	import { initDeviceAdapt } from './utils/device-adapt.js'
+
+	// 心跳定时器放模块作用域，不挂组件 data —— App 组件不渲染，
+	// 用 data 有平台差异，模块变量最稳。
+	let beatTimer = null
 
 	export default {
 		onLaunch: function() {
@@ -10,23 +15,37 @@
 			// 底部那条栏仍由 components/app-tab-bar 自己画，原生这条开屏即隐藏：
 			// App 端隐藏后 tabBarView.height 取 0（不占布局），H5 端 shown=false 直接不渲染 DOM。
 			uni.hideTabBar({ animation: false })
+			// 设备尺寸适配：刷一次 --vh（H5 的真实可视高度）并挂上尺寸变化监听
+			initDeviceAdapt()
 			// 每次冷启动默认进入「图片分享」（蓝色主题）；模式仅在本次会话内跨页保持
 			resetAppMode()
-			// 没登录先挡在登录页：launch 阶段直接跳会被吞，放到下一个事件循环里。
-			// ensureSession 会先拿 refresh_token 续一次，续上了就不打扰用户（不然 1 小时就被踢回登录页）
+			// 没登录先挡在登录页：这件事现在由页面级守卫负责 —— main.js 的全局 mixin 在每个页面
+			// onShow 调 guardSession()，首个页面挂上时就会挡，比在 onLaunch 里猜"当前在哪一页"准得多。
+			// 原先这里还有一次 reLaunch 兜底，与守卫重复；实测删掉后冷启动仍稳定落在登录页。
+			// ensureSession() 仍要在冷启动时跑一次：本机有 refresh_token 时先把 access_token 续上。
 			setTimeout(() => {
-				ensureSession().then((s) => {
-					if (!s) uni.reLaunch({ url: '/pages/login/index' })
-				})
+				// 续上登录态后立刻报一次心跳（冷启动时本机凭证可能刚过期，
+				// 这时候 getSession() 还给不出东西，得等 ensureSession 续完）
+				ensureSession().then(heartbeat)
 			}, 0)
 		},
 		onShow: function() {
 			console.log('App Show')
 			// 锁屏亮屏 flag 在进程被杀、系统重建 Activity 后会丢失，每次回前台补设
 			applyLockScreenFlags()
+			// 回前台补刷一次尺寸变量：H5 上地址栏收放、App 上分屏/转屏都可能改了可视高度
+			initDeviceAdapt()
+			// 心跳：让后台知道"这个人现在开着 app"。只在回前台时打，退后台就停 ——
+			// 不然人没在用也会被算成"在线"。
+			// 定时器 30 秒一跳、auth.js 里节流 60 秒：真正发出去的间隔最多 90 秒
+			// （定时器如果也设 60 秒，会和登录时那次错相，间隔被拉到 120 秒）。
+			heartbeat()
+			if (beatTimer) clearInterval(beatTimer)
+			beatTimer = setInterval(heartbeat, 30 * 1000)
 		},
 		onHide: function() {
 			console.log('App Hide')
+			if (beatTimer) { clearInterval(beatTimer); beatTimer = null }
 		}
 	}
 </script>
@@ -680,5 +699,84 @@
 	html.theme-thought uni-modal .uni-modal .uni-modal__ft:after,
 	html.theme-thought uni-modal .uni-modal .uni-modal__btn:after {
 		border-color: #2A2A32;
+	}
+
+	/* ============================================================
+	 * 设备尺寸适配（不同屏幕宽 / 高 / 横竖屏）
+	 * ------------------------------------------------------------
+	 * ① rpx 基准封顶。rpx 是「按屏宽等比放大」的：uni 把它编译成 rem
+	 *    （1rem = 32rpx），运行时给 html 写内联 font-size = 屏宽 / 23.4375。
+	 *    于是平板 / 折叠屏展开 / 桌面 H5 上等比放大到失真 —— 768px 宽时
+	 *    正文 28rpx 变成 28.7px（手机上是 14px），大数字与卡片一起胀开。
+	 *    这里用 !important 盖掉运行时写的内联值，在 560px 设计宽处封顶：
+	 *    4.26667vw = 100 / 23.4375，正好等于原来的等比换算，
+	 *    所以 ≤560px 的窄屏（手机）数值一模一样，行为完全不变。
+	 *    上一条不带 min() 的是兜底：老 WebView 不认 min() 时退回等比，不会崩。
+	 * ② 内容列封顶居中：与 ① 同一个 560px，宽屏上就是一个居中的手机列；
+	 *    窄屏 max-width 不生效，行为与原来一致。
+	 * ③ 安全区：横屏时刘海在左右两侧，页面左右留白至少吃掉 safe-area。
+	 * ④ 矮屏 / 窄屏：压缩留白，把可视区留给内容。
+	 * 断点与 utils/device-adapt.js 的 ADAPT 常量一一对应，改一处要一起改。
+	 * ============================================================ */
+	html {
+		/* 大屏内容列封顶宽（px），与 device-adapt.js 的 ADAPT.contentMaxWidth 同值 */
+		--adapt-content-max: 560px;
+		/* 页面左右留白（窄屏 / 矮屏的媒体查询里会收一档） */
+		--adapt-gutter: 24rpx;
+
+		font-size: 4.26667vw !important;
+		font-size: min(4.26667vw, 23.8933px) !important;
+	}
+
+	.page {
+		/* 宽屏收进居中列；min-height 用 --vh（H5 由 utils/device-adapt.js 写真实可视高度，
+		   修地址栏收放时 100vh 偏大；App 端没有 --vh，回落到 1vh = 原行为） */
+		max-width: var(--adapt-content-max, 560px);
+		margin-left: auto;
+		margin-right: auto;
+		min-height: calc(var(--vh, 1vh) * 100);
+	}
+
+	/* 横屏：左右两侧可能是刘海 / 圆角，留白至少吃到安全区 */
+	@media (orientation: landscape) {
+		.page {
+			padding-left: max(var(--adapt-gutter, 24rpx), env(safe-area-inset-left));
+			padding-right: max(var(--adapt-gutter, 24rpx), env(safe-area-inset-right));
+		}
+	}
+
+	/* 矮屏（横屏手机、小屏机）：纵向留白收一档，悬浮 TabBar 的让位高度也收一档 */
+	@media (max-height: 640px) {
+		.page {
+			padding-top: calc(var(--status-bar-height, 0px) + 8rpx);
+			padding-bottom: 16rpx;
+		}
+
+		.page-tabbar {
+			padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
+		}
+	}
+
+	/* 窄屏（< 360px，5.0" 及以下、小折叠外屏）：左右留白收一档，别把卡片内容挤到换行 */
+	@media (max-width: 359px) {
+		.page {
+			padding-left: 20rpx;
+			padding-right: 20rpx;
+		}
+	}
+
+	/* 宽屏（≥600px）下的系统弹层：跟着内容列一起收窄居中，不横跨整块屏幕 */
+	@media screen and (min-width: 600px) {
+		uni-modal .uni-modal {
+			max-width: 420px;
+		}
+
+		uni-actionsheet .uni-actionsheet__menu,
+		uni-actionsheet .uni-actionsheet__action {
+			width: 100%;
+			max-width: 420px;
+			margin-left: auto;
+			margin-right: auto;
+		}
 	}
 </style>

@@ -64,7 +64,14 @@
 			}
 		},
 		{
-			"path": "pages/register/index",
+			"path": "pages/agreement/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/change-password/index",
 			"style": {
 				"navigationStyle": "custom",
 				"navigationBarTitleText": ""
